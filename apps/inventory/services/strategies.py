@@ -11,6 +11,7 @@ from decimal import Decimal
 from typing import Any, Protocol
 
 from django.db.models import F, Q
+from django.utils import timezone
 
 from apps.core.exceptions import InsufficientStockError
 from apps.inventory.models import Stock
@@ -41,16 +42,7 @@ class FIFOStrategy:
         self, product: Any, warehouse: Any, quantity: Decimal,
     ) -> list[Allocation]:
         """Devuelve allocations ordenados por antiguedad del lote."""
-        candidates = (
-            Stock.objects.filter(product=product, quantity__gt=0)
-            .filter(location__warehouse=warehouse)
-            .filter(location__location_type__in=[
-                Location.LocationType.RECEIVING,
-                Location.LocationType.STORAGE,
-                Location.LocationType.PICKING,
-            ])
-            .order_by("lot__created_at", "id")
-        )
+        candidates = _pickable(product, warehouse).order_by("lot__created_at", "id")
         return _consume(candidates, quantity)
 
 
@@ -61,18 +53,28 @@ class FEFOStrategy:
         self, product: Any, warehouse: Any, quantity: Decimal,
     ) -> list[Allocation]:
         """Devuelve allocations ordenados por ``lot.expires_at``."""
-        candidates = (
-            Stock.objects.filter(product=product, quantity__gt=0)
-            .filter(location__warehouse=warehouse)
-            .filter(location__location_type__in=[
-                Location.LocationType.RECEIVING,
-                Location.LocationType.STORAGE,
-                Location.LocationType.PICKING,
-            ])
-            .filter(Q(lot__isnull=True) | Q(lot__expires_at__isnull=False))
-            .order_by(F("lot__expires_at").asc(nulls_last=True), "id")
+        candidates = _pickable(product, warehouse).order_by(
+            F("lot__expires_at").asc(nulls_last=True), "id"
         )
         return _consume(candidates, quantity)
+
+
+def _pickable(product: Any, warehouse: Any):
+    """Stock disponible para picking.
+
+    Solo ubicaciones de recepcion, almacenamiento o picking (excluye
+    cuarentena y despacho) y nunca lotes vencidos.
+    """
+    return (
+        Stock.objects.filter(product=product, quantity__gt=0, location__warehouse=warehouse)
+        .filter(location__location_type__in=[
+            Location.LocationType.RECEIVING,
+            Location.LocationType.STORAGE,
+            Location.LocationType.PICKING,
+        ])
+        .filter(Q(lot__isnull=True) | Q(lot__expires_at__isnull=True)
+                | Q(lot__expires_at__gte=timezone.localdate()))
+    )
 
 
 def _consume(candidates, quantity: Decimal) -> list[Allocation]:

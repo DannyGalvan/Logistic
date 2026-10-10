@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import datetime
 from decimal import Decimal
 
 import pytest
 
 from apps.catalog.models import Brand, Category, Product, UnitOfMeasure
 from apps.core.exceptions import InsufficientStockError
+from apps.inventory.models import Lot
 from apps.inventory.services import InventoryService
 from apps.inventory.services.strategies import (
     FEFOStrategy,
@@ -67,3 +69,31 @@ def test_strategy_insufficient_stock(setup) -> None:
 def test_get_strategy_returns_default() -> None:
     """``get_strategy`` con clave desconocida devuelve FIFO."""
     assert isinstance(get_strategy("UNKNOWN"), FIFOStrategy)
+
+
+@pytest.mark.django_db
+def test_fefo_orders_by_expiry_and_skips_expired_and_quarantine(setup) -> None:
+    """FEFO: primero el lote que vence antes; ignora vencidos y cuarentena."""
+    product = setup["product"]
+    product.track_lots = True
+    product.track_expiry = True
+    product.save()
+    today = datetime.date.today()
+    service = InventoryService()
+    storage = setup["location"]
+    quarantine = setup["warehouse"].locations.get(code="CUA")
+    for number, days, location in (
+        ("LATE", 90, storage), ("SOON", 10, storage),
+        ("EXPIRED", -1, storage), ("QUAR", 5, quarantine),
+    ):
+        service.receive(
+            product=product, location=location, quantity=Decimal("5"),
+            unit_cost=Decimal("1"), user=setup["user"], lot_number=number,
+            expires_at=today + datetime.timedelta(days=days),
+        )
+    allocations = FEFOStrategy().allocate(product, setup["warehouse"], Decimal("7"))
+    lots = [Lot.objects.get(pk=a.lot_id).lot_number for a in allocations]
+    assert lots == ["SOON", "LATE"]
+    # Disponible: 100 sin lote (fixture) + SOON + LATE; vencido y cuarentena no cuentan.
+    with pytest.raises(InsufficientStockError):
+        FEFOStrategy().allocate(product, setup["warehouse"], Decimal("111"))
