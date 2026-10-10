@@ -109,10 +109,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 DATABASES = {
-    "default": env.db(
-        "DATABASE_URL",
-        default="postgres://USER:PASSWORD@HOST:PORT/DBNAME",
-    ),
+    "default": env.db("DATABASE_URL"),
 }
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
 DATABASES["default"]["TEST"] = {"NAME": env("TEST_DATABASE_NAME", default="test_logistic")}

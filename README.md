@@ -105,7 +105,7 @@ Antes de clonar el repositorio, asegurese de tener:
 
 > Si su sistema no tiene Python 3.14 con wheels disponibles para todos los paquetes, cree el venv con 3.13: `uv venv --python 3.13 .venv`. Toda la configuracion es compatible hacia abajo.
 
-> La base de datos predeterminada (`USER:PASSWORD@HOST:PORT/DBNAME`) corresponde a un entorno academico. Las credenciales reales nunca se versionan: use `.env` y rotelas tras la entrega.
+> La cadena de conexion a PostgreSQL se lee exclusivamente desde la variable `DATABASE_URL` definida en `.env`. El repositorio no contiene credenciales; cada despliegue debe generar sus propias.
 
 ## Configuracion del entorno (.env)
 
