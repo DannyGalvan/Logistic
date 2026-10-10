@@ -15,10 +15,17 @@ persistent=no
 # para modulos de configuracion (importar todo desde ``base`` y sobreescribir).
 # too-many-ancestors: BaseListView apila 5 mixins de Django por diseño;
 # no aporta valor obligar a refactorizar.
+# redefined-outer-name: patron estandar de pytest al inyectar fixtures
+# en el scope de los tests (los parametros de funcion reusan el nombre
+# del fixture definido a nivel de modulo).
+# unused-argument: los fixtures de pytest se reciben como parametros
+# aunque la funcion no los use directamente (delega en otro fixture).
 disable=too-few-public-methods,
         wildcard-import,
         unused-wildcard-import,
-        too-many-ancestors
+        too-many-ancestors,
+        redefined-outer-name,
+        unused-argument
 
 [FORMAT]
 max-line-length=100

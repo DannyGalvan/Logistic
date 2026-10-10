@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Mi perfil{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Mi perfil</h1>
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Datos personales</h2>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="action" value="profile">
+          {% crispy profile_form %}
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Cambiar contrasena</h2>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="action" value="password">
+          {% crispy password_form %}
+          <button type="submit" class="btn btn-warning">Cambiar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -25,7 +25,7 @@
             <li><a class="dropdown-item" href="{% url 'admin:index' %}">Administracion</a></li>
             <li><hr class="dropdown-divider"></li>
             <li>
-              <form method="post" action="{% url 'logout' %}">
+              <form method="post" action="{% url 'accounts:logout' %}">
                 {% csrf_token %}
                 <button class="dropdown-item" type="submit">Cerrar sesion</button>
               </form>
@@ -33,7 +33,7 @@
           </ul>
         </div>
       {% else %}
-        <a class="btn btn-sm btn-primary" href="{% url 'login' %}">Iniciar sesion</a>
+        <a class="btn btn-sm btn-primary" href="{% url 'accounts:login' %}">Iniciar sesion</a>
       {% endif %}
     </div>
   </div>
