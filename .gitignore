@@ -38,7 +38,7 @@ coverage.xml
 
 # --- Pylint ---
 .pylint.d/
-reports/
+/reports/
 
 # --- Node (assets) ---
 node_modules/
