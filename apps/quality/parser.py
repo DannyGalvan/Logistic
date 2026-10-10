@@ -73,6 +73,7 @@ class Json2Parser:
         statistics = payload.get("statistics", {})
         counts_raw = statistics.get("messageTypeCount", {})
         counts = {str(k): int(v) for k, v in counts_raw.items()}
+        counts.setdefault("module", int(statistics.get("modulesLinted", 0) or 0))
         score_raw = statistics.get("score")
         score = float(score_raw) if score_raw is not None else None
         return LintResult(

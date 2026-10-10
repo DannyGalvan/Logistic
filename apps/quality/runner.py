@@ -8,6 +8,7 @@ subproceso y devuelve la salida cruda.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -60,6 +61,13 @@ class SubprocessPylintRunner:
             *targets,
         ]
         cwd = Path(settings.BASE_DIR) if hasattr(settings, "BASE_DIR") else Path.cwd()
+        if all(Path(target).is_file() for target in targets):
+            # Archivos sueltos (snippets): sin paralelismo; con ``jobs=0``
+            # Pylint 4 falla al analizar rutas fuera del proyecto.
+            args.insert(-len(targets), "--jobs=1")
+        env = {**os.environ, "PYTHONPATH": os.pathsep.join(
+            filter(None, [str(cwd), os.environ.get("PYTHONPATH", "")])
+        )}
         started = time.monotonic()
         try:
             completed = subprocess.run(
@@ -68,6 +76,7 @@ class SubprocessPylintRunner:
                 text=True,
                 timeout=self.timeout,
                 cwd=str(cwd),
+                env=env,
                 check=False,
             )
         except subprocess.TimeoutExpired as exc:

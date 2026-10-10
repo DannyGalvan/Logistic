@@ -108,3 +108,23 @@ def test_kardex_returns_rows(setup) -> None:
     )
     rows = kardex(setup["product"])
     assert rows
+
+
+@pytest.mark.django_db
+def test_movements_raise_and_resolve_low_stock_alert(setup) -> None:
+    """Los movimientos disparan ``stock_changed`` y evaluan alertas solas."""
+    product = setup["product"]
+    product.reorder_point = Decimal("5")
+    product.save()
+    service = InventoryService()
+    service.receive(product=product, location=setup["location"],
+                    quantity=Decimal("10"), unit_cost=Decimal("1"), user=setup["user"])
+    active = Alert.objects.filter(product=product, alert_type="LOW_STOCK",
+                                  resolved_at__isnull=True)
+    assert not active.exists()
+    service.issue(product=product, location=setup["location"],
+                  quantity=Decimal("8"), user=setup["user"])
+    assert active.exists()
+    service.receive(product=product, location=setup["location"],
+                    quantity=Decimal("10"), unit_cost=Decimal("1"), user=setup["user"])
+    assert not active.exists()

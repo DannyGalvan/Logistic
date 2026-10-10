@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+from django.contrib.auth.signals import (
+    user_logged_in,
+    user_logged_out,
+    user_login_failed,
+)
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
@@ -70,6 +75,31 @@ def record_post_delete(sender, instance, **kwargs):  # type: ignore[no-untyped-d
         return
     user = get_current_user()
     services.log(user=user, action="DELETE", obj=instance)
+
+
+def _client_ip(request) -> str | None:  # type: ignore[no-untyped-def]
+    """IP del cliente (``REMOTE_ADDR``) o ``None``."""
+    if request is None:
+        return None
+    return request.META.get("REMOTE_ADDR") or None
+
+
+@receiver(user_logged_in)
+def record_login(sender, request, user, **kwargs):  # type: ignore[no-untyped-def]  # pylint: disable=unused-argument
+    """Registra ``LOGIN``."""
+    services.log_login_success(user, _client_ip(request))
+
+
+@receiver(user_logged_out)
+def record_logout(sender, request, user, **kwargs):  # type: ignore[no-untyped-def]  # pylint: disable=unused-argument
+    """Registra ``LOGOUT``."""
+    services.log_logout(user, _client_ip(request))
+
+
+@receiver(user_login_failed)
+def record_login_failed(sender, credentials, request=None, **kwargs):  # type: ignore[no-untyped-def]  # pylint: disable=unused-argument
+    """Registra ``LOGIN_FAILED`` con el usuario intentado."""
+    services.log_login_failed(credentials.get("username", ""), _client_ip(request))
 
 
 __all__ = ["AUDITED_MODELS", "resolve_model"]

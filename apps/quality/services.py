@@ -25,6 +25,16 @@ class RunComparison:
     count_deltas: dict[str, int]
 
 
+# Bits del exit code de Pylint: 1 fatal, 2 error, 4 warning, 8 refactor,
+# 16 convention, 32 error de uso. Solo 1 y 32 implican que el analisis fallo.
+FAILURE_EXIT_BITS = 1 | 32
+
+
+def run_status(exit_code: int) -> str:
+    """``SUCCESS`` si Pylint completo el analisis, ``FAILED`` si no."""
+    return "FAILED" if exit_code & FAILURE_EXIT_BITS else "SUCCESS"
+
+
 class LintService:
     """API de ejecucion y analisis de Pylint."""
 
@@ -108,7 +118,7 @@ class LintService:
         """Persiste el resultado en la BD."""
         run = LintRun.objects.create(
             target=target,
-            status="SUCCESS" if output.exit_code in (0, 4, 6, 8, 16, 32) else "FAILED",
+            status=run_status(output.exit_code),
             score=result.score,
             convention_count=result.counts.get("convention", 0),
             refactor_count=result.counts.get("refactor", 0),
@@ -140,4 +150,4 @@ class LintService:
         return run
 
 
-__all__ = ["LintService", "RunComparison"]
+__all__ = ["LintService", "RunComparison", "run_status"]

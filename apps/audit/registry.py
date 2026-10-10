@@ -21,18 +21,19 @@ def register(
         model_label: ``app_label.ModelName`` (ej. ``catalog.Product``).
         exclude_fields: Campos a excluir del diff (ej. ``updated_at``).
     """
-    AUDITED_MODELS.add(model_label)
-    _excluded[model_label] = set(exclude_fields)
+    label = model_label.lower()
+    AUDITED_MODELS.add(label)
+    _excluded[label] = set(exclude_fields)
 
 
 def is_audited(model_label: str) -> bool:
-    """Indica si un modelo esta auditado."""
-    return model_label in AUDITED_MODELS
+    """Indica si un modelo esta auditado (sin distinguir mayusculas)."""
+    return model_label.lower() in AUDITED_MODELS
 
 
 def get_excluded(model_label: str) -> set[str]:
     """Devuelve el set de campos excluidos."""
-    return _excluded.get(model_label, set())
+    return _excluded.get(model_label.lower(), set())
 
 
 def resolve_model(model_label: str):

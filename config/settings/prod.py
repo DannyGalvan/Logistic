@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import os
 
+from django.core.exceptions import ImproperlyConfigured
+
 from .base import *  # noqa: F401,F403
-from .base import STATICFILES_STORAGE as _STORAGE
+from .base import STORAGES
 
 DEBUG = False
 
@@ -24,5 +26,15 @@ SECURE_BROWSER_XSS_FILTER = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-_ = _STORAGE
+STORAGES = {
+    **STORAGES,
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+if not ALLOWED_HOSTS:  # noqa: F405
+    raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS es obligatorio en produccion.")
+
+if SECRET_KEY.startswith("insecure-"):  # noqa: F405
+    raise ImproperlyConfigured("Define DJANGO_SECRET_KEY para produccion.")

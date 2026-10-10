@@ -15,11 +15,19 @@ from .commands import (
     ReceiveStockCommand,
     TransferStockCommand,
 )
+from ..events import stock_changed
 from .strategies import Allocation, get_strategy
 
 
 class InventoryService:  # pylint: disable=too-few-public-methods
     """API unificada para todas las operaciones de stock."""
+
+    @staticmethod
+    def _run(command):  # type: ignore[no-untyped-def]
+        """Ejecuta el comando y notifica ``stock_changed`` (alertas)."""
+        movement = command.execute()
+        stock_changed.send(sender=InventoryService, product=command.product)
+        return movement
 
     def receive(  # pylint: disable=too-many-arguments,too-many-locals
         self,
@@ -36,7 +44,7 @@ class InventoryService:  # pylint: disable=too-few-public-methods
         reason: str = "PURCHASE",
     ):
         """Registra una recepcion de stock."""
-        return ReceiveStockCommand(
+        return self._run(ReceiveStockCommand(
             product=product,
             location=location,
             quantity=quantity,
@@ -47,7 +55,7 @@ class InventoryService:  # pylint: disable=too-few-public-methods
             manufactured_at=manufactured_at,
             reference=reference,
             reason=reason,
-        ).execute()
+        ))
 
     def issue(  # pylint: disable=too-many-arguments
         self,
@@ -61,7 +69,7 @@ class InventoryService:  # pylint: disable=too-few-public-methods
         reason: str = "SALE",
     ):
         """Registra una salida de stock."""
-        return IssueStockCommand(
+        return self._run(IssueStockCommand(
             product=product,
             location=location,
             quantity=quantity,
@@ -69,7 +77,7 @@ class InventoryService:  # pylint: disable=too-few-public-methods
             lot=lot,
             reference=reference,
             reason=reason,
-        ).execute()
+        ))
 
     def transfer(  # pylint: disable=too-many-arguments
         self,
@@ -83,7 +91,7 @@ class InventoryService:  # pylint: disable=too-few-public-methods
         reference: str = "",
     ):
         """Registra una transferencia entre dos ubicaciones."""
-        return TransferStockCommand(
+        return self._run(TransferStockCommand(
             product=product,
             from_location=from_location,
             to_location=to_location,
@@ -91,7 +99,7 @@ class InventoryService:  # pylint: disable=too-few-public-methods
             user=user,
             lot=lot,
             reference=reference,
-        ).execute()
+        ))
 
     def adjust(  # pylint: disable=too-many-arguments
         self,
@@ -105,7 +113,7 @@ class InventoryService:  # pylint: disable=too-few-public-methods
         note: str = "",
     ):
         """Ajusta la cantidad en una ubicacion al valor contado."""
-        return AdjustStockCommand(
+        return self._run(AdjustStockCommand(
             product=product,
             location=location,
             counted_quantity=counted_quantity,
@@ -113,7 +121,7 @@ class InventoryService:  # pylint: disable=too-few-public-methods
             lot=lot,
             reason=reason,
             note=note,
-        ).execute()
+        ))
 
     def allocate(
         self,

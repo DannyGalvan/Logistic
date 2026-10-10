@@ -10,9 +10,9 @@ import json  # unused-import
 
 
 def Calcular(a, b):
-    Resultado = a + b  # invalid-name, unused-variable
-    Datos = {"valor": Resultado}
-    return Datos
+    Resultado = a + b  # invalid-name
+    Temporal = Resultado * 2  # invalid-name, unused-variable
+    return Resultado
 
 
 def divide_numbers(valor, divisor, lista=[]):  # dangerous-default-value
@@ -47,5 +47,4 @@ def procesa(items):
         "media": media,
         "maximo": maximo,
         "minimo": minimo,
-        "json": json.dumps(items),  # noqa
     }

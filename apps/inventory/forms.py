@@ -9,7 +9,7 @@ from django import forms
 from apps.catalog.models import Product
 from apps.warehouses.models import Location, Warehouse
 
-from .models import CycleCount
+from .models import CycleCount, Lot
 
 
 class _BaseMovementForm(forms.Form):
@@ -49,11 +49,22 @@ class ReceiveForm(_BaseMovementForm):
         return qty
 
 
-class IssueForm(_BaseMovementForm):
+class _LotMixin(forms.Form):
+    """Lote opcional para productos con ``track_lots``."""
+
+    lot = forms.ModelChoiceField(
+        queryset=Lot.objects.order_by("expires_at", "lot_number"),
+        required=False,
+        label="Lote",
+        help_text="Obligatorio solo si el producto maneja lotes.",
+    )
+
+
+class IssueForm(_LotMixin, _BaseMovementForm):
     """Formulario de salida."""
 
 
-class TransferForm(_BaseMovementForm):
+class TransferForm(_LotMixin, _BaseMovementForm):
     """Formulario de transferencia."""
 
     to_location = forms.ModelChoiceField(
@@ -70,7 +81,7 @@ class TransferForm(_BaseMovementForm):
         return cleaned
 
 
-class AdjustForm(_BaseMovementForm):
+class AdjustForm(_LotMixin, _BaseMovementForm):
     """Formulario de ajuste por conteo."""
 
     quantity = None

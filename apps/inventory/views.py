@@ -7,15 +7,18 @@ historial de movimientos, kardex, alertas, lotes y conteos.
 from __future__ import annotations
 
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, FormView, ListView
 
 from apps.catalog.models import Product
+from apps.core.exceptions import DomainError
 from apps.core.views import (
     LoginRequiredMixin,
     PermissionRequiredMixin,
     ServiceActionView,
+    error_text,
     parse_date,
     parse_decimal,
 )
@@ -80,8 +83,8 @@ class _MovementCreateView(  # pylint: disable=too-few-public-methods
         method = getattr(self.get_service(), self.method_name)
         try:
             method(user=self.request.user, **data)
-        except Exception as exc:  # pylint: disable=broad-exception-caught
-            form.add_error(None, str(exc))
+        except (DomainError, ValidationError) as exc:
+            form.add_error(None, error_text(exc))
             return self.form_invalid(form)
         messages.success(self.request, "Operacion registrada.")
         return HttpResponseRedirect(self.get_success_url())
