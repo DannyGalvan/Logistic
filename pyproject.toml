@@ -1,5 +1,98 @@
 [project]
-name = "calidad-software-proyecto"
+name = "stockflow"
 version = "0.1.0"
+description = "StockFlow: sistema de inventario y logistica con modulo de calidad Pylint."
+readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+license = { text = "MIT" }
+authors = [{ name = "Danny Galvan" }]
+keywords = ["django", "inventory", "pylint", "quality"]
+dependencies = [
+    "Django>=5.2.8,<5.3",
+    "djangorestframework>=3.16,<4",
+    "drf-spectacular>=0.28",
+    "django-environ>=0.12",
+    "psycopg[binary]>=3.2.10",
+    "django-htmx>=1.23",
+    "django-filter>=25.1",
+    "django-crispy-forms>=2.4",
+    "crispy-bootstrap5>=2025.6",
+    "openpyxl>=3.1",
+    "reportlab>=4.4",
+    "whitenoise>=6.9",
+    "pylint>=4.0",
+    "pylint-django>=2.6",
+    "gunicorn>=23.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4",
+    "pytest-django>=4.11",
+    "pytest-cov>=6.0",
+    "factory-boy>=3.3",
+    "django-debug-toolbar>=5.2",
+    "debugpy>=1.8",
+    "pre-commit>=4.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py"]
+addopts = "--reuse-db -ra --strict-markers"
+markers = [
+    "slow: ejecuta pylint real (mas lento)",
+]
+testpaths = ["apps", "tests"]
+
+[tool.coverage.run]
+source = ["apps", "config"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "apps/quality/snippets/*",
+    "config/asgi.py",
+    "config/wsgi.py",
+    "config/settings/prod.py",
+]
+branch = true
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true
+
+[tool.pylint.main]
+load-plugins = ["pylint_django"]
+django-settings-module = "config.settings.test"
+ignore = ["migrations"]
+ignore-paths = "^apps/quality/snippets/.*$"
+jobs = 0
+py-version = "3.14"
+fail-under = 9.5
+persistent = false
+
+[tool.pylint.messages_control]
+disable = ["too-few-public-methods"]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint.design]
+max-args = 6
+max-positional-arguments = 6
+max-attributes = 10
+max-locals = 15
+max-returns = 6
+max-branches = 12
+
+[tool.pylint.basic]
+good-names = ["i", "j", "k", "pk", "id", "qs", "_", "urlpatterns", "app_name", "register"]
+
+[tool.pylint.reports]
+output-format = "colorized"
+reports = false
+score = true
