@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Conteo {{ cycle.code }}{% endblock %}
+{% block topbar_title %}<i class="bi bi-clipboard-check me-2 text-primary"></i>Conteo {{ cycle.code }}{% endblock %}
+{% block content %}
+<a href="{% url 'inventory:cycle-count-list' %}" class="page-back"><i class="bi bi-arrow-left"></i> Conteos ciclicos</a>
+<div class="page-header">
+  <div>
+    <h1>{{ cycle.code }} <span class="badge-soft {{ cycle.status|status_soft }} align-middle fs-6">{{ cycle.get_status_display }}</span></h1>
+    <p class="page-subtitle">{{ cycle.warehouse }} · {{ cycle.location|default:"Todas las ubicaciones" }}{% if cycle.approved_by %} · aprobado por {{ cycle.approved_by }} el {{ cycle.approved_at|date:"d M Y H:i" }}{% endif %}</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    {% if cycle.status == 'DRAFT' and perms.inventory.add_cyclecount %}
+      <form method="post" action="{% url 'inventory:cycle-count-start' cycle.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit"><i class="bi bi-play-fill me-1"></i>Iniciar conteo</button></form>
+    {% endif %}
+    {% if cycle.status == 'IN_PROGRESS' and perms.accounts.approve_cyclecount %}
+      <button type="button" class="btn btn-success" {% if not all_counted %}disabled title="Captura todas las cantidades antes de aprobar"{% endif %} data-confirm-action="{% url 'inventory:cycle-count-approve' cycle.pk %}" data-confirm-variant="btn-success" data-confirm-message="¿Aprobar el conteo {{ cycle.code }}? Se generaran ajustes de inventario por las diferencias."><i class="bi bi-check2-all me-1"></i>Aprobar</button>
+    {% endif %}
+    {% if cycle.status == 'DRAFT' or cycle.status == 'IN_PROGRESS' %}{% if perms.inventory.add_cyclecount %}
+      <button type="button" class="btn btn-outline-danger" data-confirm-action="{% url 'inventory:cycle-count-cancel' cycle.pk %}" data-confirm-variant="btn-danger" data-confirm-message="¿Cancelar el conteo {{ cycle.code }}?"><i class="bi bi-x-circle me-1"></i>Cancelar</button>
+    {% endif %}{% endif %}
+  </div>
+</div>
+<div class="card">
+  <form method="post" action="{% url 'inventory:cycle-count-record' cycle.pk %}">
+    {% csrf_token %}
+    <div class="table-responsive">
+      <table class="table table-modern">
+        <thead><tr><th>Ubicacion</th><th>Producto</th><th>Lote</th><th class="num">Esperado</th><th>Contado</th><th class="num">Diferencia</th></tr></thead>
+        <tbody>
+          {% for line in lines %}
+            <tr>
+              <td>{{ line.location.code }}</td>
+              <td><div class="cell-strong">{{ line.product.name }}</div><span class="small text-body-secondary">{{ line.product.sku }}</span></td>
+              <td>{{ line.lot.lot_number|default:"—" }}</td>
+              <td class="num">{{ line.expected_quantity|qty }}</td>
+              <td>
+                {% if cycle.status == 'IN_PROGRESS' %}
+                  <label class="visually-hidden" for="count_{{ line.pk }}">Cantidad contada</label>
+                  <input id="count_{{ line.pk }}" name="count_{{ line.pk }}" type="number" step="0.001" min="0" class="form-control form-control-sm" value="{% if line.counted_quantity is not None %}{{ line.counted_quantity|stringformat:'s' }}{% endif %}">
+                {% else %}{{ line.counted_quantity|qty }}{% endif %}
+              </td>
+              <td class="num {% if line.difference %}{% if line.difference > 0 %}text-success{% else %}text-danger{% endif %} fw-semibold{% endif %}">{% if line.difference is not None %}{{ line.difference|qty }}{% else %}—{% endif %}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6">{% include "partials/_empty.html" with icon="bi-clipboard" message="No habia existencias en el alcance del conteo." %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if cycle.status == 'IN_PROGRESS' and lines and perms.inventory.add_cyclecount %}
+      <div class="card-footer text-end"><button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Guardar cantidades</button></div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

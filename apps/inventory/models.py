@@ -16,6 +16,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.urls import reverse
 
 from apps.core.models import (
     TimeStampedModel,
@@ -255,6 +256,14 @@ class CycleCount(UserStampedModel):
         verbose_name = "Conteo ciclico"
         verbose_name_plural = "Conteos ciclicos"
         ordering = ["-code"]
+
+    def __str__(self) -> str:
+        """Devuelve el codigo del conteo."""
+        return self.code
+
+    def get_absolute_url(self) -> str:
+        """URL del detalle del conteo."""
+        return reverse("inventory:cycle-count-detail", args=[self.pk])
 
 
 class CycleCountLine(models.Model):

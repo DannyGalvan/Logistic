@@ -24,6 +24,23 @@
       });
     }
 
+    // Acciones irreversibles: <button data-confirm-action="url" data-confirm-message="...">
+    var confirmModal = document.getElementById("confirmModal");
+    if (confirmModal && window.bootstrap) {
+      var modal = new bootstrap.Modal(confirmModal);
+      document.querySelectorAll("[data-confirm-action]").forEach(function (btn) {
+        btn.addEventListener("click", function (event) {
+          event.preventDefault();
+          document.getElementById("confirmModalForm").action = btn.getAttribute("data-confirm-action");
+          document.getElementById("confirmModalMessage").textContent =
+            btn.getAttribute("data-confirm-message") || "¿Estas seguro?";
+          var submit = document.getElementById("confirmModalSubmit");
+          submit.className = "btn " + (btn.getAttribute("data-confirm-variant") || "btn-primary");
+          modal.show();
+        });
+      });
+    }
+
     document.querySelectorAll("[data-toggle-password]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var input = document.getElementById(btn.getAttribute("data-toggle-password"));

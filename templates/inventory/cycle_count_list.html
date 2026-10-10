@@ -27,7 +27,7 @@
       <tbody>
         {% for cycle in cycle_counts %}
           <tr>
-            <td><span class="cell-code">{{ cycle.code }}</span></td>
+            <td><a class="cell-code" href="{% url 'inventory:cycle-count-detail' cycle.pk %}">{{ cycle.code }}</a></td>
             <td><span class="cell-strong">{{ cycle.warehouse }}</span></td>
             <td>{{ cycle.location|default:'Todas' }}</td>
             <td><span class="badge-soft {{ cycle.status|status_soft }}">{{ cycle.get_status_display }}</span></td>

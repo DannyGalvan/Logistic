@@ -7,7 +7,6 @@ from typing import Any
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views import View
-from rest_framework.views import APIView
 
 from apps.core.views import LoginRequiredMixin, PermissionRequiredMixin
 
@@ -62,8 +61,11 @@ class InventoryValuationView(
         return get_exporter(fmt).to_response(data)
 
 
-class ChartDataView(APIView):
-    """Endpoint API JSON para graficos Chart.js."""
+class ChartDataView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    """Endpoint JSON para graficos Chart.js."""
+
+    permission_required = "reports.view_reports"
+    raise_exception = True
 
     def get(self, request: HttpRequest) -> JsonResponse:
         """Devuelve series para el grafico ``movements_by_day``."""

@@ -66,6 +66,12 @@
           Entrar <i class="bi bi-arrow-right ms-1"></i>
         </button>
       </form>
+      {% if demo_users %}
+      <div class="alert alert-info small mt-4 mb-0" role="note">
+        <strong>Modo desarrollo.</strong> Usuarios demo: {{ demo_users|join:", " }}.
+        Contrasena: valor de <code>SEED_DEMO_PASSWORD</code> en <code>.env</code>.
+      </div>
+      {% endif %}
     </div>
   </section>
 </div>

@@ -161,7 +161,7 @@ class RunPylintView(
 ):
     """Ejecuta Pylint via POST (accion explicita)."""
 
-    permission_required = "quality.run_lint"
+    permission_required = "accounts.run_lint"
 
     def post(self, request) -> HttpResponse:
         """Lanza Pylint y redirige al dashboard."""

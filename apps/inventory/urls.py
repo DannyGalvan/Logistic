@@ -31,4 +31,30 @@ urlpatterns = [
         views.CycleCountCreateView.as_view(),
         name="cycle-count-create",
     ),
+    path(
+        "conteos/<int:pk>/",
+        views.CycleCountDetailView.as_view(),
+        name="cycle-count-detail",
+    ),
+    path(
+        "conteos/<int:pk>/iniciar/",
+        views.CycleCountStartView.as_view(),
+        name="cycle-count-start",
+    ),
+    path(
+        "conteos/<int:pk>/registrar/",
+        views.CycleCountRecordView.as_view(),
+        name="cycle-count-record",
+    ),
+    path(
+        "conteos/<int:pk>/aprobar/",
+        views.CycleCountApproveView.as_view(),
+        name="cycle-count-approve",
+    ),
+    path(
+        "conteos/<int:pk>/cancelar/",
+        views.CycleCountCancelView.as_view(),
+        name="cycle-count-cancel",
+    ),
+    path("kardex/", views.KardexView.as_view(), name="kardex"),
 ]

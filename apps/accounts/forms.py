@@ -21,6 +21,9 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from .models import User
+from .roles import Role
+
+ROLE_CHOICES = [("", "— Sin rol —"), *((str(r), str(r)) for r in Role)]
 
 
 class LoginForm(AuthenticationForm):
@@ -40,6 +43,8 @@ class LoginForm(AuthenticationForm):
 class UserForm(forms.ModelForm):
     """Formulario de alta/edicion de usuarios (sin password)."""
 
+    role = forms.ChoiceField(choices=ROLE_CHOICES, required=False, label=_("Rol"))
+
     class Meta:
         """Configuracion del formulario de usuarios."""
 
@@ -54,7 +59,6 @@ class UserForm(forms.ModelForm):
             "role",
             "is_active",
             "is_staff",
-            "groups",
         ]
         labels = {
             "username": _("Usuario"),
@@ -66,12 +70,13 @@ class UserForm(forms.ModelForm):
             "role": _("Rol"),
             "is_active": _("Activo"),
             "is_staff": _("Acceso al admin"),
-            "groups": _("Grupos"),
         }
 
 
 class UserCreateForm(UserCreationForm):
     """Formulario de alta de usuarios con password."""
+
+    role = forms.ChoiceField(choices=ROLE_CHOICES, required=False, label=_("Rol"))
 
     class Meta(UserCreationForm.Meta):
         """Hereda campos y agrega los extras de StockFlow."""

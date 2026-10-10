@@ -11,6 +11,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.urls import reverse
 
 from apps.core.models import UserStampedModel
 
@@ -49,6 +50,10 @@ class PurchaseOrder(UserStampedModel):
     def __str__(self) -> str:
         """Devuelve ``code - supplier``."""
         return f"{self.code} - {self.supplier.name}"
+
+    def get_absolute_url(self) -> str:
+        """URL del detalle de la orden."""
+        return reverse("purchasing:order-detail", args=[self.pk])
 
     @property
     def total(self) -> Decimal:

@@ -12,6 +12,7 @@ from django.utils import timezone
 from apps.catalog.models import Product
 from apps.inventory.models import Lot, Stock, StockMovement
 from apps.purchasing.models import PurchaseOrder
+from apps.core.selectors import low_stock_products
 from apps.sales.models import SalesOrder
 from apps.warehouses.models import Warehouse
 
@@ -20,13 +21,16 @@ def dashboard_kpis() -> dict[str, object]:
     """KPIs agregados para el dashboard."""
     products = Product.objects.filter(is_active=True)
     stock_value = sum(
-        (s.quantity * s.product.cost_price for s in Stock.objects.all()),
+        (
+            s.quantity * s.product.cost_price
+            for s in Stock.objects.select_related("product")
+        ),
         Decimal("0"),
     )
     return {
         "products": products.count(),
         "warehouses": Warehouse.active.count(),
-        "low_stock": products.filter(reorder_point__gt=0).count(),
+        "low_stock": low_stock_products().count(),
         "pending_orders": (
             PurchaseOrder.objects.exclude(
                 status__in=["RECEIVED", "CANCELLED"]

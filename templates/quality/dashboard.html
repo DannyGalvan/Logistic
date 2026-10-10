@@ -8,7 +8,7 @@
     <h1>Calidad de codigo</h1>
     <p class="page-subtitle">Analisis estatico del proyecto con Pylint</p>
   </div>
-  {% if perms.quality.run_lint %}
+  {% if perms.accounts.run_lint %}
   <form method="post" action="{% url 'quality:run' %}">
     {% csrf_token %}
     <button type="submit" class="btn btn-primary"><i class="bi bi-play-fill me-1"></i>Ejecutar Pylint ahora</button>

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load ui crispy_forms_tags %}
+{% block title %}Orden {{ order.code }}{% endblock %}
+{% block topbar_title %}<i class="bi bi-cart3 me-2 text-primary"></i>Orden {{ order.code }}{% endblock %}
+{% block content %}
+<a href="{% url 'purchasing:order-list' %}" class="page-back"><i class="bi bi-arrow-left"></i> Ordenes de compra</a>
+<div class="page-header">
+  <div>
+    <h1>{{ order.code }} <span class="badge-soft {{ order.status|status_soft }} align-middle fs-6">{{ order.get_status_display }}</span></h1>
+    <p class="page-subtitle">{{ order.supplier }} · {{ order.warehouse }} · {{ order.order_date|date:"d M Y" }}{% if order.expected_date %} · entrega {{ order.expected_date|date:"d M Y" }}{% endif %}</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    {% if order.is_editable and perms.purchasing.change_purchaseorder %}
+      <a href="{% url 'purchasing:order-update' order.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil-square me-1"></i>Editar</a>
+    {% endif %}
+    {% if order.status == 'DRAFT' and perms.accounts.confirm_purchaseorder %}
+      <button type="button" class="btn btn-primary" data-confirm-action="{% url 'purchasing:order-confirm' order.pk %}" data-confirm-message="¿Confirmar la orden {{ order.code }}? Ya no podra editarse."><i class="bi bi-check2-circle me-1"></i>Confirmar</button>
+    {% endif %}
+    {% if order.status == 'DRAFT' or order.status == 'CONFIRMED' %}{% if perms.purchasing.change_purchaseorder %}
+      <button type="button" class="btn btn-outline-danger" data-confirm-action="{% url 'purchasing:order-cancel' order.pk %}" data-confirm-variant="btn-danger" data-confirm-message="¿Cancelar la orden {{ order.code }}? Esta accion no se puede deshacer."><i class="bi bi-x-circle me-1"></i>Cancelar orden</button>
+    {% endif %}{% endif %}
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header"><h2 class="h6 fw-semibold mb-0">Lineas</h2></div>
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead><tr><th>Producto</th><th class="num">Cantidad</th><th class="num">Recibido</th><th class="num">Pendiente</th><th class="num">Costo unit.</th><th class="num">Subtotal</th></tr></thead>
+      <tbody>
+        {% for line in lines %}
+          <tr>
+            <td><div class="cell-strong">{{ line.product.name }}</div><span class="small text-body-secondary">{{ line.product.sku }}</span></td>
+            <td class="num">{{ line.quantity|qty }}</td>
+            <td class="num">{{ line.received_quantity|qty }}</td>
+            <td class="num fw-semibold">{{ line.pending_quantity|qty }}</td>
+            <td class="num">{{ line.unit_cost|money }}</td>
+            <td class="num">{{ line.subtotal|money }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">{% include "partials/_empty.html" with icon="bi-list-ul" message="La orden aun no tiene lineas." %}</td></tr>
+        {% endfor %}
+      </tbody>
+      {% if lines %}<tfoot><tr><th colspan="5" class="text-end">Total</th><th class="num">{{ order.total|money }}</th></tr></tfoot>{% endif %}
+    </table>
+  </div>
+  {% if order.is_editable and perms.purchasing.change_purchaseorder %}
+  <div class="card-footer">
+    <form method="post" action="{% url 'purchasing:order-add-line' order.pk %}" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <div class="col-md-5">{{ line_form.product|as_crispy_field }}</div>
+      <div class="col-md-3">{{ line_form.quantity|as_crispy_field }}</div>
+      <div class="col-md-2">{{ line_form.unit_cost|as_crispy_field }}</div>
+      <div class="col-md-2 mb-3"><button class="btn btn-outline-primary w-100" type="submit"><i class="bi bi-plus-lg me-1"></i>Agregar</button></div>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+{% if can_receive and perms.accounts.receive_purchaseorder %}
+<div class="card mb-4">
+  <div class="card-header"><h2 class="h6 fw-semibold mb-0">Registrar recepcion</h2></div>
+  <form method="post" action="{% url 'purchasing:order-receive' order.pk %}">
+    {% csrf_token %}
+    <div class="card-body pb-0">
+      <label for="id_location" class="form-label">Ubicacion de recepcion</label>
+      <select id="id_location" name="location" class="form-select mb-3" required>
+        {% for loc in locations %}<option value="{{ loc.pk }}">{{ loc.code }} · {{ loc.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-modern">
+        <thead><tr><th>Producto</th><th class="num">Pendiente</th><th>Cantidad</th><th>Lote</th><th>Vence</th></tr></thead>
+        <tbody>
+          {% for line in lines %}{% if line.pending_quantity > 0 %}
+            <tr>
+              <td class="cell-strong">{{ line.product.name }}</td>
+              <td class="num">{{ line.pending_quantity|qty }}</td>
+              <td><label class="visually-hidden" for="qty_{{ line.pk }}">Cantidad</label><input id="qty_{{ line.pk }}" name="qty_{{ line.pk }}" type="number" step="0.001" min="0" max="{{ line.pending_quantity|stringformat:'s' }}" class="form-control form-control-sm" value="{{ line.pending_quantity|stringformat:'s' }}"></td>
+              <td><label class="visually-hidden" for="lot_{{ line.pk }}">Lote</label><input id="lot_{{ line.pk }}" name="lot_{{ line.pk }}" class="form-control form-control-sm" {% if line.product.track_lots %}required placeholder="Requerido"{% else %}placeholder="Opcional"{% endif %}></td>
+              <td><label class="visually-hidden" for="exp_{{ line.pk }}">Vencimiento</label><input id="exp_{{ line.pk }}" name="exp_{{ line.pk }}" type="date" class="form-control form-control-sm" {% if line.product.track_expiry %}required{% endif %}></td>
+            </tr>
+          {% endif %}{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer text-end"><button type="submit" class="btn btn-primary"><i class="bi bi-box-arrow-in-down me-1"></i>Registrar recepcion</button></div>
+  </form>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header"><h2 class="h6 fw-semibold mb-0">Recepciones</h2></div>
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead><tr><th>Codigo</th><th>Fecha</th><th>Ubicacion</th><th>Detalle</th></tr></thead>
+      <tbody>
+        {% for receipt in receipts %}
+          <tr>
+            <td><span class="cell-code">{{ receipt.code }}</span></td>
+            <td class="small">{{ receipt.received_at|date:"d M Y H:i" }}</td>
+            <td>{{ receipt.location.code }}</td>
+            <td class="small">{% for rl in receipt.lines.all %}{{ rl.order_line.product.name }}: {{ rl.quantity|qty }}{% if rl.lot_number %} (lote {{ rl.lot_number }}){% endif %}{% if not forloop.last %}<br>{% endif %}{% endfor %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">{% include "partials/_empty.html" with icon="bi-box-arrow-in-down" message="Sin recepciones registradas." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

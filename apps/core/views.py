@@ -2,18 +2,22 @@
 
 from __future__ import annotations
 
+import datetime
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from django.contrib.auth.mixins import (
     LoginRequiredMixin,
     PermissionRequiredMixin,
 )
-from django.core.exceptions import ImproperlyConfigured
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.contrib import messages
+from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 from django_filters.views import FilterView
 
+from .exceptions import DomainError
 from .selectors import dashboard_context
 
 
@@ -62,6 +66,71 @@ class BaseListView(
         context = super().get_context_data(**kwargs)
         context["is_htmx"] = getattr(self.request, "htmx", False)
         return context
+
+
+def error_text(exc: Exception) -> str:
+    """Devuelve un texto legible para errores de dominio o validacion."""
+    if isinstance(exc, ValidationError):
+        return " ".join(exc.messages)
+    return str(exc)
+
+
+def parse_decimal(raw: str | None) -> Decimal | None:
+    """Convierte texto a ``Decimal`` o ``None`` si esta vacio o es invalido."""
+    try:
+        return Decimal(raw) if raw else None
+    except InvalidOperation:
+        return None
+
+
+def parse_date(raw: str | None) -> datetime.date | None:
+    """Convierte ``YYYY-MM-DD`` a ``date`` o ``None`` si es invalido."""
+    try:
+        return datetime.date.fromisoformat(raw) if raw else None
+    except ValueError:
+        return None
+
+
+def form_errors_text(form: Any) -> str:
+    """Aplana los errores de un formulario en un unico texto."""
+    return " ".join(
+        f"{field}: {' '.join(errors)}" for field, errors in form.errors.items()
+    )
+
+
+class ServiceActionView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    """Vista POST que ejecuta una accion de service sobre un objeto.
+
+    Las subclases definen ``model``, ``permission_required``,
+    ``success_message`` y ``perform``. Los errores de dominio o de
+    validacion se muestran como mensaje y no generan un 500.
+    """
+
+    model: Any = None
+    success_message: str = "Operacion registrada."
+    http_method_names = ["post"]
+    raise_exception = True
+
+    def perform(self, obj: Any, request: HttpRequest) -> None:
+        """Ejecuta la accion; las subclases deben implementarla."""
+        raise ImproperlyConfigured(
+            f"{type(self).__name__} debe implementar perform()."
+        )
+
+    def get_redirect_url(self, obj: Any) -> str:
+        """URL de retorno tras la accion (por defecto el detalle)."""
+        return obj.get_absolute_url()
+
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        """Busca el objeto, ejecuta la accion y redirige."""
+        obj = get_object_or_404(self.model, pk=pk)
+        try:
+            self.perform(obj, request)
+        except (DomainError, ValidationError) as exc:
+            messages.error(request, error_text(exc))
+        else:
+            messages.success(request, self.success_message)
+        return HttpResponseRedirect(self.get_redirect_url(obj))
 
 
 class BaseDashboardView(LoginRequiredMixin, View):

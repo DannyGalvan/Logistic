@@ -13,10 +13,20 @@ crear usuarios demo con rol.
 from __future__ import annotations
 
 from django.contrib.auth.models import Group, Permission
+from django.db.models import Q
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.accounts.roles import ROLE_PERMISSIONS, Role
+
+
+def _permissions_query(full_codenames: set[str]) -> Q:
+    """Construye un ``Q`` que empareja cada ``app_label.codename`` exacto."""
+    query = Q(pk__in=[])
+    for full in full_codenames:
+        app_label, codename = full.split(".", 1)
+        query |= Q(content_type__app_label=app_label, codename=codename)
+    return query
 
 
 class Command(BaseCommand):
@@ -32,19 +42,17 @@ class Command(BaseCommand):
         for role in Role:
             group, created = Group.objects.get_or_create(name=str(role))
             target_codenames = set(ROLE_PERMISSIONS[role])
-            existing = set(
-                group.permissions.values_list("codename", flat=True)
-            )
+            existing = {
+                f"{app_label}.{codename}"
+                for app_label, codename in group.permissions.values_list(
+                    "content_type__app_label", "codename"
+                )
+            }
             if not created and existing == target_codenames:
                 continue
             perms = list(
-                Permission.objects.filter(
-                    content_type__app_label__in=[
-                        code.split(".", 1)[0] for code in target_codenames
-                    ],
-                    codename__in=[
-                        code.split(".", 1)[1] for code in target_codenames
-                    ],
+                Permission.objects.select_related("content_type").filter(
+                    _permissions_query(target_codenames)
                 )
             )
             assigned_full = {

@@ -30,9 +30,17 @@ class InventoryConfig(AppConfig):
                 label="Movimientos",
                 url_name="inventory:movement-list",
                 icon="bi-arrow-left-right",
-                permission="inventory.view_movement",
+                permission="inventory.view_stockmovement",
                 section="Inventario",
                 order=20,
+            ),
+            MenuItem(
+                label="Kardex",
+                url_name="inventory:kardex",
+                icon="bi-journal-richtext",
+                permission="accounts.view_kardex",
+                section="Inventario",
+                order=25,
             ),
             MenuItem(
                 label="Lotes",

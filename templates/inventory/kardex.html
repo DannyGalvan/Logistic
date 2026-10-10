@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Kardex{% endblock %}
+{% block topbar_title %}<i class="bi bi-journal-richtext me-2 text-primary"></i>Kardex{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Kardex valorizado</h1>
+    <p class="page-subtitle">{% if product %}{{ product.sku }} · {{ product.name }}{% if warehouse %} · {{ warehouse }}{% endif %}{% else %}Selecciona un producto para ver su historial{% endif %}</p>
+  </div>
+</div>
+<form method="get" class="card mb-3"><div class="card-body row g-2 align-items-end">
+  <div class="col-md-4">
+    <label for="product" class="form-label small">Producto</label>
+    <select id="product" name="product" class="form-select" required>
+      <option value="">— Selecciona —</option>
+      {% for p in products %}<option value="{{ p.pk }}" {% if product and p.pk == product.pk %}selected{% endif %}>{{ p.sku }} · {{ p.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <label for="warehouse" class="form-label small">Almacen</label>
+    <select id="warehouse" name="warehouse" class="form-select">
+      <option value="">Todos</option>
+      {% for w in warehouses %}<option value="{{ w.pk }}" {% if warehouse and w.pk == warehouse.pk %}selected{% endif %}>{{ w }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2"><label for="desde" class="form-label small">Desde</label><input id="desde" type="date" name="desde" value="{{ request.GET.desde }}" class="form-control"></div>
+  <div class="col-md-2"><label for="hasta" class="form-label small">Hasta</label><input id="hasta" type="date" name="hasta" value="{{ request.GET.hasta }}" class="form-control"></div>
+  <div class="col-md-1"><button class="btn btn-primary w-100" type="submit" aria-label="Consultar"><i class="bi bi-search"></i></button></div>
+</div></form>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Referencia</th><th class="num">Entrada</th><th class="num">Salida</th><th class="num">Saldo</th><th class="num">Costo unit.</th><th class="num">Valor saldo</th></tr></thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td class="small text-nowrap">{{ row.date|date:"d M Y H:i" }}</td>
+            <td>{{ row.movement_type }}</td>
+            <td><span class="cell-code">{{ row.reference }}</span></td>
+            <td class="num text-success">{% if row.entry_qty %}{{ row.entry_qty|qty }}{% endif %}</td>
+            <td class="num text-danger">{% if row.exit_qty %}{{ row.exit_qty|qty }}{% endif %}</td>
+            <td class="num fw-semibold">{{ row.balance|qty }}</td>
+            <td class="num">{{ row.unit_cost|money }}</td>
+            <td class="num">{{ row.balance_value|money }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8">{% include "partials/_empty.html" with icon="bi-journal-richtext" message="Sin movimientos para los filtros seleccionados." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

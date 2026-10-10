@@ -29,13 +29,14 @@
       <tbody>
         {% for order in orders %}
           <tr>
-            <td><span class="cell-code">{{ order.code }}</span></td>
+            <td><a class="cell-code" href="{% url 'sales:order-detail' order.pk %}">{{ order.code }}</a></td>
             <td><span class="cell-strong">{{ order.customer }}</span></td>
             <td>{{ order.warehouse }}</td>
             <td>{{ order.order_date|date:"d M Y" }}</td>
             <td><span class="badge-soft {{ order.status|status_soft }}">{{ order.get_status_display }}</span></td>
             <td class="text-end text-nowrap">
-              <a class="btn btn-sm btn-icon" href="{% url 'sales:order-update' order.pk %}" title="Editar" aria-label="Editar"><i class="bi bi-pencil-square"></i></a>
+              <a class="btn btn-sm btn-icon" href="{% url 'sales:order-detail' order.pk %}" title="Ver" aria-label="Ver"><i class="bi bi-eye"></i></a>
+              {% if order.is_editable %}<a class="btn btn-sm btn-icon" href="{% url 'sales:order-update' order.pk %}" title="Editar" aria-label="Editar"><i class="bi bi-pencil-square"></i></a>{% endif %}
             </td>
           </tr>
         {% empty %}

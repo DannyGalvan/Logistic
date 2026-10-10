@@ -9,11 +9,19 @@ from __future__ import annotations
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, FormView, ListView
+from django.views.generic import CreateView, DetailView, FormView, ListView
 
-from apps.core.views import LoginRequiredMixin, PermissionRequiredMixin
+from apps.catalog.models import Product
+from apps.core.views import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    ServiceActionView,
+    parse_date,
+    parse_decimal,
+)
+from apps.warehouses.models import Warehouse
 
-from . import services
+from . import selectors, services
 from .forms import AdjustForm, CycleCountForm, IssueForm, ReceiveForm, TransferForm
 from .models import Alert, CycleCount, Lot, Stock, StockMovement
 
@@ -41,7 +49,7 @@ class StockListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
 class MovementListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     """Historial de movimientos."""
 
-    permission_required = "inventory.view_movement"
+    permission_required = "inventory.view_stockmovement"
     template_name = "inventory/movement_list.html"
     context_object_name = "movements"
     paginate_by = 30
@@ -186,7 +194,120 @@ class CycleCountCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateVi
             location=form.cleaned_data.get("location"),
         )
         messages.success(self.request, f"Conteo {cycle.code} creado.")
-        return HttpResponseRedirect(self.success_url)
+        return HttpResponseRedirect(cycle.get_absolute_url())
+
+
+class CycleCountDetailView(
+    LoginRequiredMixin, PermissionRequiredMixin, DetailView,
+):
+    """Detalle del conteo con captura de cantidades."""
+
+    permission_required = "inventory.view_cyclecount"
+    model = CycleCount
+    template_name = "inventory/cycle_count_detail.html"
+    context_object_name = "cycle"
+    raise_exception = True
+
+    def get_context_data(self, **kwargs):  # type: ignore[no-untyped-def]
+        """Agrega las lineas del conteo."""
+        context = super().get_context_data(**kwargs)
+        lines = list(
+            self.object.lines.select_related("product", "location", "lot")
+            .order_by("location__code", "product__sku")
+        )
+        context["lines"] = lines
+        context["all_counted"] = bool(lines) and all(
+            line.counted_quantity is not None for line in lines
+        )
+        return context
+
+
+class CycleCountStartView(ServiceActionView):
+    """Pasa el conteo a ``IN_PROGRESS``."""
+
+    permission_required = "inventory.add_cyclecount"
+    model = CycleCount
+    success_message = "Conteo iniciado."
+
+    def perform(self, obj, request) -> None:
+        """Delegado al service."""
+        services.CycleCountService().start(obj)
+
+
+class CycleCountRecordView(ServiceActionView):
+    """Guarda las cantidades contadas."""
+
+    permission_required = "inventory.add_cyclecount"
+    model = CycleCount
+    success_message = "Cantidades guardadas."
+
+    def perform(self, obj, request) -> None:
+        """Registra cada linea con cantidad capturada."""
+        service = services.CycleCountService()
+        for line in obj.lines.all():
+            counted = parse_decimal(request.POST.get(f"count_{line.pk}"))
+            if counted is not None and counted >= 0:
+                service.record(line, counted)
+
+
+class CycleCountApproveView(ServiceActionView):
+    """Aprueba el conteo y genera los ajustes."""
+
+    permission_required = "accounts.approve_cyclecount"
+    model = CycleCount
+    success_message = "Conteo aprobado; ajustes generados."
+
+    def perform(self, obj, request) -> None:
+        """Delegado al service."""
+        services.CycleCountService().approve(obj, user=request.user)
+
+
+class CycleCountCancelView(ServiceActionView):
+    """Cancela el conteo."""
+
+    permission_required = "inventory.add_cyclecount"
+    model = CycleCount
+    success_message = "Conteo cancelado."
+
+    def perform(self, obj, request) -> None:
+        """Delegado al service."""
+        services.CycleCountService().cancel(obj)
+
+
+class KardexView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    """Kardex valorizado de un producto."""
+
+    permission_required = "accounts.view_kardex"
+    template_name = "inventory/kardex.html"
+    context_object_name = "rows"
+    raise_exception = True
+    product: Product | None = None
+    warehouse: Warehouse | None = None
+
+    def get_queryset(self):  # type: ignore[no-untyped-def]
+        """Calcula el kardex segun los filtros del querystring."""
+        params = self.request.GET
+        self.product = Product.objects.filter(pk=params.get("product") or 0).first()
+        self.warehouse = Warehouse.objects.filter(
+            pk=params.get("warehouse") or 0
+        ).first()
+        if self.product is None:
+            return []
+        return selectors.kardex(
+            self.product,
+            warehouse=self.warehouse,
+            date_from=parse_date(params.get("desde")),
+            date_to=parse_date(params.get("hasta")),
+        )
+
+    def get_context_data(self, **kwargs):  # type: ignore[no-untyped-def]
+        """Agrega los catalogos para los filtros."""
+        context = super().get_context_data(**kwargs)
+        context["product"] = self.product
+        context["warehouse"] = self.warehouse
+        context["products"] = Product.objects.order_by("sku").only("pk", "sku", "name")
+        context["warehouses"] = Warehouse.objects.order_by("code")
+        return context
 
 
 __all__ = [
@@ -200,4 +321,10 @@ __all__ = [
     "LotListView",
     "CycleCountListView",
     "CycleCountCreateView",
+    "CycleCountDetailView",
+    "CycleCountStartView",
+    "CycleCountRecordView",
+    "CycleCountApproveView",
+    "CycleCountCancelView",
+    "KardexView",
 ]

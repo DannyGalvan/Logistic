@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -31,6 +32,7 @@ from django.views.generic import (
 
 from .forms import ProfileForm, UserCreateForm, UserForm
 from .models import User
+from .services import assign_role
 
 
 class LoginView(AuthLoginView):
@@ -38,6 +40,15 @@ class LoginView(AuthLoginView):
 
     template_name = "registration/login.html"
     redirect_authenticated_user = True
+
+    def get_context_data(self, **kwargs):  # type: ignore[no-untyped-def]
+        """En DEBUG muestra los usuarios demo creados por ``seed_demo``."""
+        context = super().get_context_data(**kwargs)
+        if settings.DEBUG:
+            context["demo_users"] = [
+                "admin", "supervisor", "almacenista", "compras", "ventas", "consulta",
+            ]
+        return context
 
 
 class LogoutView(AuthLogoutView):
@@ -111,6 +122,7 @@ class UserCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     def form_valid(self, form):  # type: ignore[no-untyped-def]
         """Muestra mensaje de exito y guarda el registro."""
         response = super().form_valid(form)
+        assign_role(self.object, form.cleaned_data.get("role"))
         messages.success(self.request, f"Usuario '{form.instance.username}' creado.")
         return response
 
@@ -128,6 +140,7 @@ class UserUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     def form_valid(self, form):  # type: ignore[no-untyped-def]
         """Confirma la operacion con un mensaje legible."""
         response = super().form_valid(form)
+        assign_role(self.object, form.cleaned_data.get("role"))
         messages.success(self.request, f"Usuario '{form.instance.username}' actualizado.")
         return response
 

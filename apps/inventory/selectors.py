@@ -10,6 +10,7 @@ from django.db.models import Q, QuerySet, Sum
 
 from apps.catalog.models import Product
 from apps.core.models import KardexRow
+from apps.core.selectors import low_stock_products as core_low_stock_products
 from apps.inventory.models import Alert, Lot, Stock, StockMovement
 
 
@@ -29,10 +30,8 @@ def stock_on_hand(product, warehouse=None) -> Decimal:
 
 
 def low_stock_products() -> QuerySet[Product]:
-    """Productos bajo minimo."""
-    return Product.objects.filter(
-        reorder_point__gt=0,
-    )
+    """Productos activos cuya existencia total esta bajo ``min_stock``."""
+    return core_low_stock_products()
 
 
 def expiring_lots(days: int | None = None) -> QuerySet[Lot]:
@@ -42,6 +41,32 @@ def expiring_lots(days: int | None = None) -> QuerySet[Lot]:
     return Lot.objects.filter(
         expires_at__lte=today + timedelta(days=days),
     ).order_by("expires_at")
+
+
+def _kardex_quantities(movement, warehouse) -> tuple[Decimal, Decimal]:
+    """Devuelve ``(entrada, salida)`` de un movimiento para el kardex.
+
+    Una transferencia es neutra a nivel global; si se filtra por almacen
+    cuenta como entrada o salida segun el lado que pertenezca a el.
+    """
+    if movement.movement_type in ("RECEIPT", "ADJUSTMENT_IN"):
+        return movement.quantity, Decimal("0")
+    if movement.movement_type in ("ISSUE", "ADJUSTMENT_OUT"):
+        return Decimal("0"), movement.quantity
+    if warehouse is None:
+        return movement.quantity, movement.quantity
+    entry = (
+        movement.quantity
+        if movement.to_location and movement.to_location.warehouse_id == warehouse.pk
+        else Decimal("0")
+    )
+    exit_q = (
+        movement.quantity
+        if movement.from_location
+        and movement.from_location.warehouse_id == warehouse.pk
+        else Decimal("0")
+    )
+    return entry, exit_q
 
 
 def kardex(
@@ -63,14 +88,8 @@ def kardex(
         qs = qs.filter(created_at__lte=date_to)
     rows: list[KardexRow] = []
     balance = Decimal("0")
-    for movement in qs:
-        if movement.movement_type in ("RECEIPT", "ADJUSTMENT_IN"):
-            entry, exit_q = movement.quantity, Decimal("0")
-        elif movement.movement_type in ("ISSUE", "ADJUSTMENT_OUT"):
-            entry, exit_q = Decimal("0"), movement.quantity
-        else:
-            entry = movement.quantity
-            exit_q = Decimal("0")
+    for movement in qs.select_related("from_location", "to_location"):
+        entry, exit_q = _kardex_quantities(movement, warehouse)
         balance += entry - exit_q
         rows.append(
             KardexRow(
