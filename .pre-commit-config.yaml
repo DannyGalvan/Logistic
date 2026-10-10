@@ -13,9 +13,9 @@ repos:
       - id: pylint
         name: pylint
         language: system
-        entry: .venv/bin/python -m pylint
-        args: ["apps", "config", "tests"]
+        entry: python -m pylint
         types: [python]
+        require_serial: true
         exclude: |
             (?x)^(
                 .*/migrations/.*|

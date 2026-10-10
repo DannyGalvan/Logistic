@@ -17,11 +17,14 @@ from typing import Callable, Iterator
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.test import Client
 from rest_framework.test import APIClient
 
 from apps.accounts.roles import Role
 from apps.accounts.services import assign_role
+from apps.catalog.models import Brand, Category, Product, UnitOfMeasure
+from apps.warehouses.services import create_warehouse
 
 
 @pytest.fixture
@@ -42,8 +45,6 @@ def client_logged() -> Iterator[Client]:
 @pytest.fixture
 def users_by_role(db) -> dict[Role, object]:  # noqa: ARG001
     """Crea un usuario por rol (incluye ``setup_roles`` automatico)."""
-    from django.core.management import call_command
-
     call_command("setup_roles", verbosity=0)
     user_model = get_user_model()
     created: dict[Role, object] = {}
@@ -88,16 +89,12 @@ def api_client_as(users_by_role) -> Callable[[Role], APIClient]:
 @pytest.fixture
 def warehouse_with_locations(db):  # noqa: ARG001
     """Almacen ``CEN`` con sus ubicaciones por defecto."""
-    from apps.warehouses.services import create_warehouse
-
     return create_warehouse(code="CEN", name="Central")
 
 
 @pytest.fixture
 def product_factory(db) -> Callable[..., object]:  # noqa: ARG001
     """Factory de productos con categoria, marca y unidad compartidas."""
-    from apps.catalog.models import Brand, Category, Product, UnitOfMeasure
-
     category, _ = Category.objects.get_or_create(name="General")
     brand, _ = Brand.objects.get_or_create(name="Generica")
     uom, _ = UnitOfMeasure.objects.get_or_create(code="UND", defaults={"name": "Unidad"})

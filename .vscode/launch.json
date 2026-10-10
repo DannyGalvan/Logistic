@@ -1,0 +1,50 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Django: runserver",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "args": ["runserver", "0.0.0.0:8000"],
+      "django": true,
+      "justMyCode": true,
+      "env": { "DJANGO_SETTINGS_MODULE": "config.settings.dev" }
+    },
+    {
+      "name": "Pytest: archivo actual",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["${file}", "-x", "-vv"],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Pytest: todo",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["-m", "not slow"],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Pylint: proyecto",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pylint",
+      "args": ["apps", "config", "tests"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Docker: attach (5678)",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": { "host": "localhost", "port": 5678 },
+      "pathMappings": [{ "localRoot": "${workspaceFolder}", "remoteRoot": "/app" }],
+      "django": true,
+      "justMyCode": true
+    }
+  ]
+}
