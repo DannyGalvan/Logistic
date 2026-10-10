@@ -1,36 +1,109 @@
 {% extends 'base.html' %}
-{% block title %}Dashboard | StockFlow{% endblock %}
+{% load ui %}
+{% block title %}Panel general{% endblock %}
+{% block topbar_title %}<i class="bi bi-grid-1x2 me-2 text-primary"></i>Panel general{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3 mb-0">Panel general</h1>
+<div class="page-header">
+  <div>
+    <h1>Hola, {{ user.first_name|default:user.get_username }}</h1>
+    <p class="page-subtitle">Resumen de tu inventario al {% now "d \d\e F, Y" %}.</p>
+  </div>
+  <a href="{% url 'inventory:receive' %}" class="btn btn-primary"><i class="bi bi-box-arrow-in-down me-1"></i>Registrar entrada</a>
 </div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <a href="{% url 'catalog:product-list' %}" class="card kpi-card h-100 text-decoration-none"><div class="card-body">
+      <div class="kpi-icon tone-indigo"><i class="bi bi-box-seam"></i></div>
+      <div><div class="kpi-label">Productos activos</div><div class="kpi-value text-body">{{ kpis.products }}</div></div>
+    </div></a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{% url 'warehouses:warehouse-list' %}" class="card kpi-card h-100 text-decoration-none"><div class="card-body">
+      <div class="kpi-icon tone-sky"><i class="bi bi-building"></i></div>
+      <div><div class="kpi-label">Almacenes</div><div class="kpi-value text-body">{{ kpis.warehouses }}</div></div>
+    </div></a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{% url 'inventory:stock-list' %}" class="card kpi-card h-100 text-decoration-none"><div class="card-body">
+      <div class="kpi-icon {% if kpis.low_stock %}tone-amber{% else %}tone-emerald{% endif %}"><i class="bi bi-exclamation-triangle"></i></div>
+      <div><div class="kpi-label">Bajo minimo</div><div class="kpi-value text-body">{{ kpis.low_stock }}</div></div>
+    </div></a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card h-100"><div class="card-body">
+      <div class="kpi-icon tone-rose"><i class="bi bi-hourglass-split"></i></div>
+      <div>
+        <div class="kpi-label">Ordenes pendientes</div>
+        <div class="kpi-value">{{ kpis.pending_orders }}</div>
+        <div class="small text-body-secondary">{{ kpis.pending_purchases }} compra · {{ kpis.pending_sales }} venta</div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card"><div class="card-body">
+      <h2 class="h6 fw-semibold mb-3">Acciones rapidas</h2>
+      <div class="row g-2">
+        <div class="col-6 col-md-4 col-xl-2"><a class="quick-action" href="{% url 'inventory:receive' %}"><span class="kpi-icon tone-emerald"><i class="bi bi-box-arrow-in-down"></i></span>Entrada</a></div>
+        <div class="col-6 col-md-4 col-xl-2"><a class="quick-action" href="{% url 'inventory:issue' %}"><span class="kpi-icon tone-rose"><i class="bi bi-box-arrow-up"></i></span>Salida</a></div>
+        <div class="col-6 col-md-4 col-xl-2"><a class="quick-action" href="{% url 'inventory:transfer' %}"><span class="kpi-icon tone-sky"><i class="bi bi-arrow-left-right"></i></span>Transferir</a></div>
+        <div class="col-6 col-md-4 col-xl-2"><a class="quick-action" href="{% url 'inventory:adjust' %}"><span class="kpi-icon tone-amber"><i class="bi bi-sliders"></i></span>Ajuste</a></div>
+        <div class="col-6 col-md-4 col-xl-2"><a class="quick-action" href="{% url 'purchasing:order-create' %}"><span class="kpi-icon tone-indigo"><i class="bi bi-cart3"></i></span>Nueva compra</a></div>
+        <div class="col-6 col-md-4 col-xl-2"><a class="quick-action" href="{% url 'sales:order-create' %}"><span class="kpi-icon tone-indigo"><i class="bi bi-receipt"></i></span>Nueva venta</a></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
 <div class="row g-3">
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm h-100"><div class="card-body">
-      <h2 class="h6 text-secondary">Productos</h2>
-      <p class="display-6 mb-0">{{ kpis.products }}</p>
-    </div></div>
+  <div class="col-xl-8">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h6 fw-semibold mb-0">Movimientos recientes</h2>
+        <a href="{% url 'inventory:movement-list' %}" class="small text-decoration-none">Ver todos <i class="bi bi-arrow-right"></i></a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-modern">
+          <thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th class="num">Cantidad</th></tr></thead>
+          <tbody>
+            {% for m in recent_movements %}
+              <tr>
+                <td class="small text-nowrap">{{ m.created_at|date:"d M H:i" }}</td>
+                <td><span class="badge-soft {% if m.movement_type == 'RECEIPT' %}badge-soft-success{% elif m.movement_type == 'ISSUE' %}badge-soft-danger{% elif m.movement_type == 'TRANSFER' %}badge-soft-info{% else %}badge-soft-warning{% endif %}">{{ m.get_movement_type_display }}</span></td>
+                <td class="cell-strong">{{ m.product.name }}</td>
+                <td class="num fw-semibold">{{ m.quantity|qty }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4">{% include "partials/_empty.html" with icon="bi-arrow-left-right" message="Aun no hay movimientos." %}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm h-100"><div class="card-body">
-      <h2 class="h6 text-secondary">Almacenes</h2>
-      <p class="display-6 mb-0">{{ kpis.warehouses }}</p>
-    </div></div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm h-100"><div class="card-body">
-      <h2 class="h6 text-secondary">Bajo minimo</h2>
-      <p class="display-6 mb-0 text-warning">{{ kpis.low_stock }}</p>
-    </div></div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm h-100"><div class="card-body">
-      <h2 class="h6 text-secondary">Ordenes pendientes</h2>
-      <p class="display-6 mb-0">{{ kpis.pending_orders }}</p>
-    </div></div>
+  <div class="col-xl-4">
+    <div class="card h-100">
+      <div class="card-header"><h2 class="h6 fw-semibold mb-0">Stock bajo minimo</h2></div>
+      <ul class="list-group list-group-flush">
+        {% for p in low_stock %}
+          <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-4 py-3">
+            <div class="min-w-0">
+              <div class="cell-strong text-truncate">{{ p.name }}</div>
+              <span class="small text-body-secondary">{{ p.sku }}</span>
+            </div>
+            <div class="text-end">
+              <div class="fw-semibold text-danger">{{ p.on_hand|qty }}</div>
+              <div class="small text-body-secondary">min {{ p.min_stock|qty }}</div>
+            </div>
+          </li>
+        {% empty %}
+          <li class="list-group-item bg-transparent">{% include "partials/_empty.html" with icon="bi-check2-circle" message="Todo por encima del minimo." %}</li>
+        {% endfor %}
+      </ul>
+    </div>
   </div>
 </div>
-<p class="text-secondary small mt-4">
-  Los indicadores se conectan a datos reales en las fases siguientes.
-</p>
 {% endblock %}

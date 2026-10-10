@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Productos{% endblock %}
+{% block topbar_title %}<i class="bi bi-box-seam me-2 text-primary"></i>Productos{% endblock %}
+{% block content %}
+{% url 'catalog:product-create' as create_url %}
+<div class="page-header">
+  <div>
+    <h1>Productos</h1>
+    <p class="page-subtitle">Catalogo de articulos inventariables{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+  <a href="{% url 'catalog:product-create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Nuevo producto
+  </a>
+</div>
+<div class="card">
+  <div class="card-header">
+    <form method="get" role="search" class="d-flex gap-2">
+      <div class="input-group" style="max-width: 420px">
+        <span class="input-group-text bg-transparent"><i class="bi bi-search"></i></span>
+        <input type="search" name="q" value="{{ term }}" class="form-control border-start-0" placeholder="Buscar por SKU, nombre o codigo de barras">
+      </div>
+      <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+      {% if term %}<a class="btn btn-link text-body-secondary" href="?">Limpiar</a>{% endif %}
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Producto</th>
+          <th>Categoria</th>
+          <th>Unidad</th>
+          <th>Rotacion</th>
+          <th class="num">Precio venta</th>
+          <th>Estado</th>
+          <th class="text-end"><span class="visually-hidden">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td><span class="cell-code">{{ product.sku }}</span></td>
+            <td><div class="cell-strong">{{ product.name }}</div><div class="small text-body-secondary">{{ product.brand|default:"Sin marca" }}</div></td>
+            <td>{{ product.category }}</td>
+            <td>{{ product.uom.code }}</td>
+            <td><span class="badge-soft badge-soft-info">{{ product.rotation_strategy }}</span></td>
+            <td class="num">{{ product.sale_price|money }}</td>
+            <td>{% if product.is_active %}<span class="badge-soft badge-soft-success">Activo</span>{% else %}<span class="badge-soft badge-soft-secondary">Inactivo</span>{% endif %}</td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-icon" href="{% url 'catalog:product-update' product.pk %}" title="Editar" aria-label="Editar"><i class="bi bi-pencil-square"></i></a>
+              {% if product.is_active %}<a class="btn btn-sm btn-icon text-danger" href="{% url 'catalog:product-deactivate' product.pk %}" title="Desactivar" aria-label="Desactivar"><i class="bi bi-slash-circle"></i></a>{% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8">{% include "partials/_empty.html" with icon="bi-box-seam" message="No se encontraron productos." cta_url=create_url cta_label="Nuevo producto" %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Movimientos{% endblock %}
+{% block topbar_title %}<i class="bi bi-arrow-left-right me-2 text-primary"></i>Movimientos{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Movimientos</h1>
+    <p class="page-subtitle">Kardex de entradas, salidas, transferencias y ajustes{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Producto</th>
+          <th>Origen → Destino</th>
+          <th class="num">Cantidad</th>
+          <th>Motivo</th>
+          <th>Usuario</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for movement in movements %}
+          <tr>
+            <td><div>{{ movement.created_at|date:"d M Y" }}</div><div class="small text-body-secondary">{{ movement.created_at|date:"H:i" }}</div></td>
+            <td><span class="badge-soft {% if movement.movement_type == "IN" or movement.movement_type == "RECEIPT" %}badge-soft-success{% elif movement.movement_type == "OUT" or movement.movement_type == "ISSUE" %}badge-soft-danger{% elif movement.movement_type == "TRANSFER" %}badge-soft-info{% else %}badge-soft-warning{% endif %}">{{ movement.get_movement_type_display }}</span></td>
+            <td><div class="cell-strong">{{ movement.product.name }}</div><span class="small text-body-secondary">{{ movement.lot.lot_number|default:"" }}</span></td>
+            <td><span class="small">{{ movement.from_location|default:"—" }} <i class="bi bi-arrow-right text-body-secondary"></i> {{ movement.to_location|default:"—" }}</span></td>
+            <td class="num"><span class="fw-semibold">{{ movement.quantity|qty }}</span></td>
+            <td>{{ movement.get_reason_display }}</td>
+            <td><span class="small">{{ movement.created_by|default:"—" }}</span></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7">{% include "partials/_empty.html" with icon="bi-arrow-left-right" message="Aun no hay movimientos." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Almacenes{% endblock %}
+{% block topbar_title %}<i class="bi bi-building me-2 text-primary"></i>Almacenes{% endblock %}
+{% block content %}
+{% url 'warehouses:warehouse-create' as create_url %}
+<div class="page-header">
+  <div>
+    <h1>Almacenes</h1>
+    <p class="page-subtitle">Centros de almacenamiento y sus ubicaciones{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+  <a href="{% url 'warehouses:warehouse-create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Nuevo almacen
+  </a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Codigo</th>
+          <th>Nombre</th>
+          <th>Direccion</th>
+          <th>Responsable</th>
+          <th>Estado</th>
+          <th class="text-end"><span class="visually-hidden">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for warehouse in warehouses %}
+          <tr>
+            <td><span class="cell-code">{{ warehouse.code }}</span></td>
+            <td><span class="cell-strong">{{ warehouse.name }}</span></td>
+            <td><span class="text-body-secondary">{{ warehouse.address|default:"—" }}</span></td>
+            <td>{{ warehouse.manager|default:'—' }}</td>
+            <td>{% if warehouse.is_active %}<span class="badge-soft badge-soft-success">Activo</span>{% else %}<span class="badge-soft badge-soft-secondary">Inactivo</span>{% endif %}</td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-icon" href="{% url 'warehouses:warehouse-update' warehouse.pk %}" title="Editar" aria-label="Editar"><i class="bi bi-pencil-square"></i></a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">{% include "partials/_empty.html" with icon="bi-building" message="Aun no hay almacenes." cta_url=create_url cta_label="Nuevo almacen" %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

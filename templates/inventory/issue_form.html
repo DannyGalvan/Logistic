@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}{% if object %}Salida de stock{% else %}Salida de stock{% endif %}{% endblock %}
+{% block topbar_title %}<i class="bi bi-box-arrow-up me-2 text-primary"></i>{% if object %}Salida de stock{% else %}Salida de stock{% endif %}{% endblock %}
+{% block content %}
+<div class="form-card">
+  <a href="{% url 'inventory:movement-list' %}" class="page-back"><i class="bi bi-arrow-left"></i> Volver</a>
+  <div class="page-header">
+    <div>
+      <h1>{% if object %}Salida de stock{% else %}Salida de stock{% endif %}</h1>
+      <p class="page-subtitle">Descuenta existencias de una ubicacion.</p>
+    </div>
+  </div>
+  <form method="post" novalidate class="card">
+    {% csrf_token %}
+    <div class="card-body p-4">
+      <div class="form-grid">
+        {{ form|crispy }}
+      </div>
+    </div>
+    <div class="card-footer d-flex gap-2 justify-content-end">
+      <a href="{% url 'inventory:movement-list' %}" class="btn btn-outline-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Registrar salida</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

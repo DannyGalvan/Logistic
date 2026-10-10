@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime
 from decimal import Decimal
 
-from django.db.models import Count, F, Sum
+from django.db.models import Count, Sum
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 

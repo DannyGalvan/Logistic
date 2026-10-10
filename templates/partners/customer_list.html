@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Clientes{% endblock %}
+{% block topbar_title %}<i class="bi bi-people me-2 text-primary"></i>Clientes{% endblock %}
+{% block content %}
+{% url 'partners:customer-create' as create_url %}
+<div class="page-header">
+  <div>
+    <h1>Clientes</h1>
+    <p class="page-subtitle">Cartera de clientes{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+  <a href="{% url 'partners:customer-create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Nuevo cliente
+  </a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>NIT</th>
+          <th>Contacto</th>
+          <th class="num">Limite de credito</th>
+          <th>Estado</th>
+          <th class="text-end"><span class="visually-hidden">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for customer in customers %}
+          <tr>
+            <td><div class="cell-strong">{{ customer.name }}</div><div class="small text-body-secondary">{{ customer.contact_name|default:"" }}</div></td>
+            <td><span class="cell-code">{{ customer.tax_id }}</span></td>
+            <td><div>{{ customer.email|default:"—" }}</div><div class="small text-body-secondary">{{ customer.phone }}</div></td>
+            <td class="num">{{ customer.credit_limit|money }}</td>
+            <td>{% if customer.is_active %}<span class="badge-soft badge-soft-success">Activo</span>{% else %}<span class="badge-soft badge-soft-secondary">Inactivo</span>{% endif %}</td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-icon" href="{% url 'partners:customer-update' customer.pk %}" title="Editar" aria-label="Editar"><i class="bi bi-pencil-square"></i></a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">{% include "partials/_empty.html" with icon="bi-people" message="Aun no hay clientes." cta_url=create_url cta_label="Nuevo cliente" %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

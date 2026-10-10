@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Reportes{% endblock %}
+{% block topbar_title %}<i class="bi bi-bar-chart-line me-2 text-primary"></i>Reportes{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Reportes</h1>
+    <p class="page-subtitle">Indicadores clave y exportaciones</p>
+  </div>
+  <div class="btn-group" role="group" aria-label="Exportar valoracion">
+    <a class="btn btn-outline-primary" href="{% url 'reports:inventory-valuation' %}?export=csv"><i class="bi bi-filetype-csv me-1"></i>CSV</a>
+    <a class="btn btn-outline-primary" href="{% url 'reports:inventory-valuation' %}?export=xlsx"><i class="bi bi-file-earmark-excel me-1"></i>Excel</a>
+    <a class="btn btn-outline-primary" href="{% url 'reports:inventory-valuation' %}?export=pdf"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3"><div class="card kpi-card h-100"><div class="card-body">
+    <div class="kpi-icon tone-emerald"><i class="bi bi-cash-stack"></i></div>
+    <div><div class="kpi-label">Valor del inventario</div><div class="kpi-value">{{ kpis.stock_value|money }}</div></div>
+  </div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="card kpi-card h-100"><div class="card-body">
+    <div class="kpi-icon tone-indigo"><i class="bi bi-box-seam"></i></div>
+    <div><div class="kpi-label">Productos activos</div><div class="kpi-value">{{ kpis.products }}</div></div>
+  </div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="card kpi-card h-100"><div class="card-body">
+    <div class="kpi-icon tone-amber"><i class="bi bi-hourglass-split"></i></div>
+    <div><div class="kpi-label">Lotes por vencer</div><div class="kpi-value">{{ kpis.expiring_lots }}</div></div>
+  </div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="card kpi-card h-100"><div class="card-body">
+    <div class="kpi-icon tone-sky"><i class="bi bi-arrow-left-right"></i></div>
+    <div><div class="kpi-label">Movimientos hoy</div><div class="kpi-value">{{ kpis.movements_today }}</div></div>
+  </div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-xl-8">
+    <div class="card h-100">
+      <div class="card-header"><h2 class="h6 fw-semibold mb-0">Movimientos por dia (30 dias)</h2></div>
+      <div class="card-body">
+        {% if movements_by_day %}
+          <canvas id="movements-chart" height="120" role="img" aria-label="Grafico de movimientos por dia"></canvas>
+          {{ chart_data|json_script:"movements-data" }}
+        {% else %}
+          {% include "partials/_empty.html" with icon="bi-graph-up" message="Sin movimientos en los ultimos 30 dias." %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-4">
+    <div class="card h-100">
+      <div class="card-header"><h2 class="h6 fw-semibold mb-0">Productos con mas salidas</h2></div>
+      <div class="table-responsive">
+        <table class="table table-modern">
+          <thead><tr><th>Producto</th><th class="num">Salidas</th></tr></thead>
+          <tbody>
+            {% for item in top_products %}
+              <tr><td><div class="cell-strong">{{ item.product__name }}</div><span class="small text-body-secondary">{{ item.product__sku }}</span></td><td class="num fw-semibold">{{ item.total|qty }}</td></tr>
+            {% empty %}
+              <tr><td colspan="2">{% include "partials/_empty.html" with icon="bi-box-arrow-up" message="Sin salidas recientes." %}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+{% if movements_by_day %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  (function () {
+    var data = JSON.parse(document.getElementById("movements-data").textContent);
+    new Chart(document.getElementById("movements-chart"), {
+      type: "bar",
+      data: { labels: data.labels, datasets: [{ label: "Movimientos", data: data.values, backgroundColor: "rgba(79, 70, 229, 0.6)", borderRadius: 4 }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+  })();
+</script>
+{% endif %}
+{% endblock %}

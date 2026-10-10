@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Corridas de Pylint{% endblock %}
+{% block topbar_title %}<i class="bi bi-shield-check me-2 text-primary"></i>Calidad de codigo{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Corridas de Pylint</h1>
+    <p class="page-subtitle">Historial de analisis{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+</div>
+{% include "quality/_nav.html" %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead><tr><th>#</th><th>Fecha</th><th>Objetivo</th><th>Origen</th><th>Usuario</th><th>Estado</th><th class="num">C/R/W/E/F</th><th class="num">Nota</th></tr></thead>
+      <tbody>
+        {% for run in runs %}
+          <tr>
+            <td><a class="cell-code" href="{% url 'quality:run-detail' run.pk %}">{{ run.pk }}</a></td>
+            <td class="small text-nowrap">{{ run.created_at|date:"d M Y H:i" }}</td>
+            <td><code>{{ run.target }}</code></td>
+            <td>{{ run.get_source_display }}</td>
+            <td>{{ run.triggered_by|default:"—" }}</td>
+            <td><span class="badge-soft {{ run.status|status_soft }}">{{ run.get_status_display }}</span></td>
+            <td class="num small">{{ run.convention_count }}/{{ run.refactor_count }}/{{ run.warning_count }}/{{ run.error_count }}/{{ run.fatal_count }}</td>
+            <td class="num fw-semibold">{{ run.score|default:"—" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8">{% include "partials/_empty.html" with icon="bi-clock-history" message="Sin corridas registradas." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

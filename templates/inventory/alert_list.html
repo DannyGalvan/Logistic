@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Alertas{% endblock %}
+{% block topbar_title %}<i class="bi bi-bell me-2 text-primary"></i>Alertas{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Alertas</h1>
+    <p class="page-subtitle">Stock bajo, caducidades y otros avisos{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Producto</th>
+          <th>Mensaje</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for alert in alerts %}
+          <tr>
+            <td>{{ alert.created_at|date:"d M Y H:i" }}</td>
+            <td><span class="badge-soft badge-soft-warning">{{ alert.get_alert_type_display }}</span></td>
+            <td><span class="cell-strong">{{ alert.product }}</span></td>
+            <td>{{ alert.message }}</td>
+            <td>{% if alert.is_read %}<span class="badge-soft badge-soft-success">Leida</span>{% else %}<span class="badge-soft badge-soft-secondary">Nueva</span>{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">{% include "partials/_empty.html" with icon="bi-bell" message="Sin alertas. Todo en orden." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

@@ -35,7 +35,11 @@ class ReceiveForm(_BaseMovementForm):
     def __init__(self, *args, **kwargs):
         """Inicializa restringiendo location al warehouse seleccionado."""
         super().__init__(*args, **kwargs)
-        self.fields["location"].queryset = Location.objects.none()
+        warehouse_id = self.data.get(self.add_prefix("warehouse")) or None
+        if warehouse_id:
+            self.fields["location"].queryset = Location.objects.filter(
+                is_active=True, warehouse_id=warehouse_id
+            )
 
     def clean_quantity(self) -> Decimal:
         """Cantidad > 0."""
@@ -69,6 +73,7 @@ class TransferForm(_BaseMovementForm):
 class AdjustForm(_BaseMovementForm):
     """Formulario de ajuste por conteo."""
 
+    quantity = None
     counted_quantity = forms.DecimalField(max_digits=14, decimal_places=3)
 
 

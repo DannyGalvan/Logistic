@@ -7,6 +7,7 @@ from typing import Any
 from django.http import HttpRequest
 
 from .menu import group_by_section, MenuRegistry
+from .selectors import unread_alerts_count
 
 
 def menu(request: HttpRequest) -> dict[str, Any]:
@@ -17,5 +18,8 @@ def menu(request: HttpRequest) -> dict[str, Any]:
 
 
 def alerts_count(request: HttpRequest) -> dict[str, Any]:
-    """Inyecta el contador de alertas no leidas (placeholder Fase 1)."""
-    return {"alerts_count": 0}
+    """Inyecta el contador de alertas no leidas."""
+    user = getattr(request, "user", None)
+    if user is None or not user.is_authenticated:
+        return {"alerts_count": 0}
+    return {"alerts_count": unread_alerts_count()}

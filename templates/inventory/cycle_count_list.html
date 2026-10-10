@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Conteos ciclicos{% endblock %}
+{% block topbar_title %}<i class="bi bi-clipboard-check me-2 text-primary"></i>Conteos ciclicos{% endblock %}
+{% block content %}
+{% url 'inventory:cycle-count-create' as create_url %}
+<div class="page-header">
+  <div>
+    <h1>Conteos ciclicos</h1>
+    <p class="page-subtitle">Verificacion fisica de existencias{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+  <a href="{% url 'inventory:cycle-count-create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Nuevo conteo
+  </a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Codigo</th>
+          <th>Almacen</th>
+          <th>Ubicacion</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cycle in cycle_counts %}
+          <tr>
+            <td><span class="cell-code">{{ cycle.code }}</span></td>
+            <td><span class="cell-strong">{{ cycle.warehouse }}</span></td>
+            <td>{{ cycle.location|default:'Todas' }}</td>
+            <td><span class="badge-soft {{ cycle.status|status_soft }}">{{ cycle.get_status_display }}</span></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">{% include "partials/_empty.html" with icon="bi-clipboard-check" message="Aun no hay conteos." cta_url=create_url cta_label="Nuevo conteo" %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

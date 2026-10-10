@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Unidades de medida{% endblock %}
+{% block topbar_title %}<i class="bi bi-rulers me-2 text-primary"></i>Unidades de medida{% endblock %}
+{% block content %}
+{% url 'catalog:unit-create' as create_url %}
+<div class="page-header">
+  <div>
+    <h1>Unidades de medida</h1>
+    <p class="page-subtitle">Unidades para cantidades de producto{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+  <a href="{% url 'catalog:unit-create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Nueva unidad
+  </a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Codigo</th>
+          <th>Nombre</th>
+          <th class="text-end"><span class="visually-hidden">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for unit in units %}
+          <tr>
+            <td><span class="cell-code">{{ unit.code }}</span></td>
+            <td>{{ unit.name }}</td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-icon" href="{% url 'catalog:unit-update' unit.pk %}" title="Editar" aria-label="Editar"><i class="bi bi-pencil-square"></i></a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3">{% include "partials/_empty.html" with icon="bi-rulers" message="Aun no hay unidades." cta_url=create_url cta_label="Nueva unidad" %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

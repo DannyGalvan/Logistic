@@ -26,7 +26,7 @@ class WarehouseListView(ListView):
         return selectors.active_warehouses()
 
 
-class WarehouseCreateView(CreateView):
+class WarehouseCreateView(CreateView):  # pylint: disable=too-few-public-methods
     """Alta de almacen (crea ubicaciones por defecto)."""
 
     model = Warehouse
@@ -36,13 +36,13 @@ class WarehouseCreateView(CreateView):
 
     def form_valid(self, form):
         """Llama al service con el usuario autenticado."""
-        warehouse = services.create_warehouse(
+        self.object = services.create_warehouse(  # pylint: disable=attribute-defined-outside-init
             user=self.request.user, **form.cleaned_data
         )
         messages.success(
-            self.request, f"Almacen '{warehouse.code}' creado con ubicaciones."
+            self.request, f"Almacen '{self.object.code}' creado con ubicaciones."
         )
-        return super().form_valid(form)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class WarehouseUpdateView(UpdateView):
@@ -70,6 +70,12 @@ class LocationCreateView(CreateView):
         """Captura el almacen desde la URL."""
         self.warehouse = get_object_or_404(Warehouse, pk=kwargs["warehouse_pk"])
         return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        """Expone el almacen al template."""
+        context = super().get_context_data(**kwargs)
+        context["warehouse"] = self.warehouse
+        return context
 
     def form_valid(self, form):
         """Llama al service y guarda la FK del almacen."""

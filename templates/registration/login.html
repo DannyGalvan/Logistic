@@ -1,24 +1,73 @@
 {% extends 'base.html' %}
-{% block title %}Iniciar sesion | StockFlow{% endblock %}
-{% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-5 col-lg-4">
-    <div class="card shadow-sm mt-5">
-      <div class="card-body p-4">
-        <h1 class="h4 mb-3 text-center">Iniciar sesion</h1>
-        <form method="post" novalidate>
-          {% csrf_token %}
-          {{ form.as_p }}
-          {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-          <button type="submit" class="btn btn-primary w-100">Entrar</button>
-        </form>
-        {% if messages %}
-          <ul class="list-unstyled small text-danger mt-3 mb-0">
-            {% for message in messages %}<li>{{ message }}</li>{% endfor %}
-          </ul>
-        {% endif %}
-      </div>
+{% load static %}
+{% block title %}Iniciar sesion{% endblock %}
+{% block body_class %}auth-body{% endblock %}
+{% block layout %}
+<div class="auth-shell">
+  <section class="auth-hero d-none d-lg-flex">
+    <div class="d-flex align-items-center gap-2">
+      <img src="{% static 'img/logo.svg' %}" alt="" width="40" height="40">
+      <span class="fs-4 fw-semibold">StockFlow</span>
     </div>
-  </div>
+    <div>
+      <h1 class="display-6 fw-semibold mb-3">Control de inventario claro y trazable.</h1>
+      <p class="auth-hero-lead mb-4">Existencias por ubicacion, lotes y caducidades, compras, ventas y kardex en un solo lugar.</p>
+      <ul class="auth-features list-unstyled mb-0">
+        <li><i class="bi bi-box-seam"></i> Stock por almacen, ubicacion y lote</li>
+        <li><i class="bi bi-arrow-left-right"></i> Entradas, salidas, transferencias y ajustes</li>
+        <li><i class="bi bi-graph-up-arrow"></i> Costo promedio ponderado y rotacion FIFO/FEFO</li>
+      </ul>
+    </div>
+    <p class="small auth-hero-lead mb-0">&copy; {% now "Y" %} StockFlow</p>
+  </section>
+
+  <section class="auth-panel">
+    <div class="auth-card">
+      <div class="d-flex d-lg-none align-items-center gap-2 mb-4">
+        <img src="{% static 'img/logo.svg' %}" alt="" width="36" height="36">
+        <span class="fs-5 fw-semibold">StockFlow</span>
+      </div>
+      <h2 class="h3 fw-semibold mb-1">Bienvenido</h2>
+      <p class="text-body-secondary mb-4">Ingresa tus credenciales para continuar.</p>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger d-flex gap-2 align-items-start py-2">
+          <i class="bi bi-exclamation-circle mt-1"></i>
+          <div>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
+        </div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="{{ form.username.id_for_label }}" class="form-label">Usuario</label>
+          <div class="input-group input-group-lg has-validation">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input type="text" name="{{ form.username.html_name }}" id="{{ form.username.id_for_label }}"
+                   value="{{ form.username.value|default:'' }}" autocomplete="username" autofocus
+                   class="form-control{% if form.username.errors %} is-invalid{% endif %}" placeholder="tu.usuario">
+            {% if form.username.errors %}<div class="invalid-feedback">{{ form.username.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+        <div class="mb-4">
+          <label for="{{ form.password.id_for_label }}" class="form-label">Contrasena</label>
+          <div class="input-group input-group-lg has-validation">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input type="password" name="{{ form.password.html_name }}" id="{{ form.password.id_for_label }}"
+                   autocomplete="current-password"
+                   class="form-control{% if form.password.errors %} is-invalid{% endif %}" placeholder="••••••••">
+            <button class="btn btn-outline-secondary" type="button" data-toggle-password="{{ form.password.id_for_label }}"
+                    aria-label="Mostrar contrasena"><i class="bi bi-eye"></i></button>
+            {% if form.password.errors %}<div class="invalid-feedback">{{ form.password.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        <button type="submit" class="btn btn-primary btn-lg w-100">
+          Entrar <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+      </form>
+    </div>
+  </section>
 </div>
+{% include "partials/_messages.html" %}
 {% endblock %}

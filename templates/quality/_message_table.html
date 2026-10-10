@@ -1,0 +1,18 @@
+<div class="table-responsive">
+  <table class="table table-modern">
+    <thead><tr><th>Tipo</th><th>Codigo</th><th>Simbolo</th><th>Ubicacion</th><th>Mensaje</th></tr></thead>
+    <tbody>
+      {% for msg in message_rows %}
+        <tr>
+          <td><span class="badge-soft {% if msg.type == 'error' or msg.type == 'fatal' %}badge-soft-danger{% elif msg.type == 'warning' %}badge-soft-warning{% elif msg.type == 'refactor' %}badge-soft-info{% else %}badge-soft-secondary{% endif %}">{{ msg.type }}</span></td>
+          <td><a class="cell-code" href="{% url 'quality:catalog' %}?q={{ msg.message_id }}">{{ msg.message_id }}</a></td>
+          <td><code>{{ msg.symbol }}</code></td>
+          <td class="small text-nowrap">{{ msg.path }}:{{ msg.line }}:{{ msg.column }}</td>
+          <td class="small">{% firstof msg.message_text msg.message %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">{% include "partials/_empty.html" with icon="bi-check2-circle" message="Sin mensajes: codigo limpio." %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

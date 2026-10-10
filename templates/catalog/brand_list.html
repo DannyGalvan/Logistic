@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Marcas{% endblock %}
+{% block topbar_title %}<i class="bi bi-award me-2 text-primary"></i>Marcas{% endblock %}
+{% block content %}
+{% url 'catalog:brand-create' as create_url %}
+<div class="page-header">
+  <div>
+    <h1>Marcas</h1>
+    <p class="page-subtitle">Fabricantes y marcas comerciales{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+  <a href="{% url 'catalog:brand-create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Nueva marca
+  </a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th class="text-end"><span class="visually-hidden">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for brand in brands %}
+          <tr>
+            <td><span class="cell-strong">{{ brand.name }}</span></td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-icon" href="{% url 'catalog:brand-update' brand.pk %}" title="Editar" aria-label="Editar"><i class="bi bi-pencil-square"></i></a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="2">{% include "partials/_empty.html" with icon="bi-award" message="Aun no hay marcas." cta_url=create_url cta_label="Nueva marca" %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

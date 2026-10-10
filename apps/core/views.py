@@ -14,6 +14,8 @@ from django.shortcuts import render
 from django.views.generic import View
 from django_filters.views import FilterView
 
+from .selectors import dashboard_context
+
 
 class HtmxTemplateMixin:
     """Resuelve una plantilla parcial cuando la peticion viene de HTMX.
@@ -68,16 +70,8 @@ class BaseDashboardView(LoginRequiredMixin, View):
     template_name = "core/dashboard.html"
 
     def get(self, request: HttpRequest) -> HttpResponse:
-        """Renderiza el dashboard con KPIs vacios en Fase 1."""
-        context: dict[str, Any] = {
-            "kpis": {
-                "products": 0,
-                "warehouses": 0,
-                "low_stock": 0,
-                "pending_orders": 0,
-            },
-        }
-        return render(request, self.template_name, context)
+        """Renderiza el dashboard con KPIs y actividad reciente."""
+        return render(request, self.template_name, dashboard_context())
 
 
 def error_403(request: HttpRequest, exception: Exception | None = None) -> HttpResponse:

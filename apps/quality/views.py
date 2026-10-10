@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -12,7 +15,29 @@ from apps.core.views import LoginRequiredMixin, PermissionRequiredMixin
 
 from . import services
 from .catalog import MessageCatalog
+from .demo_snippets import DEMO_SNIPPETS
 from .models import LintRun
+
+CATEGORY_LABELS: tuple[tuple[str, str], ...] = (
+    ("C", "Convencion"),
+    ("R", "Refactor"),
+    ("W", "Advertencia"),
+    ("E", "Error"),
+    ("F", "Fatal"),
+    ("I", "Informativo"),
+)
+
+
+def _load_demo(key: str) -> str:
+    """Devuelve el codigo fuente de un snippet demo o cadena vacia."""
+    demo = DEMO_SNIPPETS.get(key)
+    if demo is None:
+        return ""
+    path = Path(settings.BASE_DIR) / demo["path"]
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
 
 
 class QualityDashboardView(
@@ -70,7 +95,7 @@ class LintRunDetailView(
         return render(
             request,
             "quality/run_detail.html",
-            {"run": run, "messages": messages_qs},
+            {"run": run, "lint_messages": messages_qs},
         )
 
 
@@ -88,20 +113,21 @@ class SnippetAnalyzeView(
             result, _ = services.LintService().analyze_snippet(code=code)
         except Exception as exc:  # pylint: disable=broad-exception-caught
             messages.error(request, f"Error: {exc}")
-            return render(
-                request,
-                "quality/snippet.html",
-                {"code": code, "result": None},
-            )
+            result = None
         return render(
             request,
             "quality/snippet.html",
-            {"code": code, "result": result},
+            {"code": code, "result": result, "demos": DEMO_SNIPPETS},
         )
 
     def get(self, request) -> HttpResponse:
-        """Muestra el formulario vacio."""
-        return render(request, "quality/snippet.html", {"result": None})
+        """Muestra el formulario, opcionalmente precargado con un demo."""
+        code = _load_demo(request.GET.get("demo", ""))
+        return render(
+            request,
+            "quality/snippet.html",
+            {"code": code, "result": None, "demos": DEMO_SNIPPETS},
+        )
 
 
 class CatalogView(
@@ -126,6 +152,7 @@ class CatalogView(
             context["entries"] = catalog.entries
         context["term"] = term
         context["category"] = category
+        context["categories"] = CATEGORY_LABELS
         return context
 
 

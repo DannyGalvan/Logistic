@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
-{% block title %}500 Error interno{% endblock %}
+{% block title %}Error 500{% endblock %}
 {% block content %}
-<div class="text-center mt-5">
-  <h1 class="display-1 fw-light">500</h1>
-  <p class="lead">Error interno del servidor. Intente nuevamente.</p>
-  <a href="{% url 'core:dashboard' %}" class="btn btn-primary">Volver al inicio</a>
+<div class="d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 60vh">
+  <div class="empty-icon" style="width:4.5rem;height:4.5rem;font-size:2rem"><i class="bi bi-bug"></i></div>
+  <div class="display-4 fw-bold text-primary">500</div>
+  <p class="lead text-body-secondary mb-4">Ocurrio un error inesperado. Intenta de nuevo en un momento.</p>
+  <a href="{% url 'core:dashboard' %}" class="btn btn-primary"><i class="bi bi-house me-1"></i>Volver al inicio</a>
 </div>
 {% endblock %}

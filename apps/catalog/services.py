@@ -70,6 +70,7 @@ def create_product(  # pylint: disable=too-many-arguments,too-many-locals
     track_lots: bool = False,
     track_expiry: bool = False,
     rotation_strategy: str = "FIFO",
+    is_active: bool = True,
     user=None,
 ) -> Product:  # pylint: disable=too-many-arguments,too-many-locals
     """Crea un producto."""
@@ -89,6 +90,7 @@ def create_product(  # pylint: disable=too-many-arguments,too-many-locals
         track_lots=track_lots,
         track_expiry=track_expiry,
         rotation_strategy=rotation_strategy,
+        is_active=is_active,
         created_by=user,
         updated_by=user,
     )

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}{% if object %}Orden {{ object.code }}{% else %}Nueva orden{% endif %}{% endblock %}
+{% block topbar_title %}<i class="bi bi-receipt me-2 text-primary"></i>{% if object %}Orden {{ object.code }}{% else %}Nueva orden{% endif %}{% endblock %}
+{% block content %}
+<div class="form-card">
+  <a href="{% url 'sales:order-list' %}" class="page-back"><i class="bi bi-arrow-left"></i> Volver</a>
+  <div class="page-header">
+    <div>
+      <h1>{% if object %}Orden {{ object.code }}{% else %}Nueva orden{% endif %}</h1>
+      <p class="page-subtitle">La orden se crea en borrador.</p>
+    </div>
+  </div>
+  <form method="post" novalidate class="card">
+    {% csrf_token %}
+    <div class="card-body p-4">
+      <div class="form-grid">
+        {{ form|crispy }}
+      </div>
+    </div>
+    <div class="card-footer d-flex gap-2 justify-content-end">
+      <a href="{% url 'sales:order-list' %}" class="btn btn-outline-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Guardar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

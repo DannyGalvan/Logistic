@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView
 
@@ -33,8 +34,10 @@ class SupplierCreateView(CreateView):
 
     def form_valid(self, form):
         """Llama al service."""
-        services.create_supplier(user=self.request.user, **form.cleaned_data)
-        return super().form_valid(form)
+        self.object = services.create_supplier(  # pylint: disable=attribute-defined-outside-init
+            user=self.request.user, **form.cleaned_data
+        )
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class SupplierUpdateView(UpdateView):
@@ -69,8 +72,10 @@ class CustomerCreateView(CreateView):
 
     def form_valid(self, form):
         """Llama al service."""
-        services.create_customer(user=self.request.user, **form.cleaned_data)
-        return super().form_valid(form)
+        self.object = services.create_customer(  # pylint: disable=attribute-defined-outside-init
+            user=self.request.user, **form.cleaned_data
+        )
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class CustomerUpdateView(UpdateView):

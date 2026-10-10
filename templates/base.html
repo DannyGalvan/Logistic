@@ -1,11 +1,24 @@
-{% load static ui %}
-<!doctype html>
-<html lang="es">
+{% load static %}<!doctype html>
+<html lang="es" data-bs-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}StockFlow{% endblock %}</title>
+  <title>{% block title %}StockFlow{% endblock %} · StockFlow</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'img/logo.svg' %}">
+  <script>
+    // Aplica el tema guardado antes del primer pintado para evitar parpadeo.
+    (function () {
+      var theme = null;
+      try { theme = localStorage.getItem("sf-theme"); } catch (e) {}
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-bs-theme", theme);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
@@ -15,20 +28,23 @@
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-body-tertiary">
-  {% include "partials/_topbar.html" %}
-  <div class="container-fluid">
-    <div class="row">
-      {% include "partials/_sidebar.html" %}
-      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+<body class="{% block body_class %}app-body{% endblock %}">
+  {% block layout %}
+  <div class="app-shell">
+    {% include "partials/_sidebar.html" %}
+    <div class="app-main">
+      {% include "partials/_topbar.html" %}
+      <main class="app-content">
         {% include "partials/_messages.html" %}
         {% block content %}{% endblock %}
       </main>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"
-          integrity="sha384-HGfzsofotlq/0lbNjeFm6Z0Q8HhM8dK0g1lQ7dHOaSXK6M8gTwp01Zk"
+  {% endblock %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
           crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"></script>
   <script src="{% static 'js/app.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>

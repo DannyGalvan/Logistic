@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Ordenes de venta{% endblock %}
+{% block topbar_title %}<i class="bi bi-receipt me-2 text-primary"></i>Ordenes de venta{% endblock %}
+{% block content %}
+{% url 'sales:order-create' as create_url %}
+<div class="page-header">
+  <div>
+    <h1>Ordenes de venta</h1>
+    <p class="page-subtitle">Pedidos de clientes{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+  <a href="{% url 'sales:order-create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Nueva orden
+  </a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Codigo</th>
+          <th>Cliente</th>
+          <th>Almacen</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th class="text-end"><span class="visually-hidden">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td><span class="cell-code">{{ order.code }}</span></td>
+            <td><span class="cell-strong">{{ order.customer }}</span></td>
+            <td>{{ order.warehouse }}</td>
+            <td>{{ order.order_date|date:"d M Y" }}</td>
+            <td><span class="badge-soft {{ order.status|status_soft }}">{{ order.get_status_display }}</span></td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-icon" href="{% url 'sales:order-update' order.pk %}" title="Editar" aria-label="Editar"><i class="bi bi-pencil-square"></i></a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">{% include "partials/_empty.html" with icon="bi-receipt" message="Aun no hay ordenes." cta_url=create_url cta_label="Nueva orden" %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

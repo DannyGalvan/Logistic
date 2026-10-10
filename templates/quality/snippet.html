@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Analizar snippet{% endblock %}
+{% block topbar_title %}<i class="bi bi-shield-check me-2 text-primary"></i>Calidad de codigo{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Analizar snippet</h1>
+    <p class="page-subtitle">Pega codigo Python y obten la nota de Pylint. El codigo no se ejecuta.</p>
+  </div>
+</div>
+{% include "quality/_nav.html" %}
+<div class="row g-3">
+  <div class="col-xl-6">
+    <div class="card h-100"><div class="card-body">
+      {% if demos %}
+      <div class="mb-3">
+        <span class="small text-body-secondary me-2">Demos:</span>
+        {% for key, demo in demos.items %}
+          <a class="btn btn-sm btn-outline-secondary mb-1" href="?demo={{ key }}" title="{{ demo.description }}">{{ demo.title }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <form method="post" action="{% url 'quality:snippet' %}">
+        {% csrf_token %}
+        <label for="id_code" class="form-label">Codigo Python</label>
+        <textarea id="id_code" name="code" rows="18" class="form-control font-monospace small" spellcheck="false" required>{{ code|default:"" }}</textarea>
+        <button type="submit" class="btn btn-primary mt-3"><i class="bi bi-search me-1"></i>Analizar</button>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-xl-6">
+    <div class="card h-100">
+      <div class="card-header"><h2 class="h6 fw-semibold mb-0">Resultado</h2></div>
+      {% if result %}
+        <div class="card-body pb-0">
+          <div class="display-6 fw-bold {% if result.score >= 9.5 %}text-success{% elif result.score >= 7 %}text-warning{% else %}text-danger{% endif %}">{{ result.score|default:"—" }}<span class="fs-6 text-body-secondary">/10</span></div>
+          <div class="small text-body-secondary">{{ result.messages|length }} mensaje{{ result.messages|length|pluralize }} · {{ result.duration_ms }} ms</div>
+        </div>
+        {% include "quality/_message_table.html" with message_rows=result.messages %}
+      {% else %}
+        <div class="card-body">{% include "partials/_empty.html" with icon="bi-code-square" message="Envia un snippet para ver el analisis." %}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

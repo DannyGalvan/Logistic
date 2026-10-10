@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Lotes{% endblock %}
+{% block topbar_title %}<i class="bi bi-upc-scan me-2 text-primary"></i>Lotes{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Lotes</h1>
+    <p class="page-subtitle">Trazabilidad de lotes y caducidades{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Lote</th>
+          <th>Producto</th>
+          <th>Fabricacion</th>
+          <th>Caducidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lot in lots %}
+          <tr>
+            <td><span class="cell-code">{{ lot.lot_number }}</span></td>
+            <td><span class="cell-strong">{{ lot.product }}</span></td>
+            <td>{{ lot.manufactured_at|date:"d M Y"|default:"—" }}</td>
+            <td>{{ lot.expires_at|date:"d M Y"|default:"—" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">{% include "partials/_empty.html" with icon="bi-upc-scan" message="Aun no hay lotes." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

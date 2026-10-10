@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Calidad{% endblock %}
+{% block topbar_title %}<i class="bi bi-shield-check me-2 text-primary"></i>Calidad de codigo{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Calidad de codigo</h1>
+    <p class="page-subtitle">Analisis estatico del proyecto con Pylint</p>
+  </div>
+  {% if perms.quality.run_lint %}
+  <form method="post" action="{% url 'quality:run' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary"><i class="bi bi-play-fill me-1"></i>Ejecutar Pylint ahora</button>
+  </form>
+  {% endif %}
+</div>
+{% include "quality/_nav.html" %}
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-4">
+    <div class="card h-100"><div class="card-body text-center">
+      <div class="kpi-label mb-2">Nota de la ultima corrida</div>
+      {% if last_run %}
+        <div class="display-4 fw-bold {% if last_run.score >= 9.5 %}text-success{% elif last_run.score >= 7 %}text-warning{% else %}text-danger{% endif %}">{{ last_run.score|default:"—" }}<span class="fs-5 text-body-secondary">/10</span></div>
+        <div class="small text-body-secondary mt-2">{{ last_run.created_at|date:"d M Y H:i" }} · {{ last_run.get_source_display }} · {{ last_run.modules_linted }} modulos · {{ last_run.duration_ms }} ms</div>
+        <a class="btn btn-sm btn-outline-primary mt-3" href="{% url 'quality:run-detail' last_run.pk %}">Ver mensajes</a>
+      {% else %}
+        {% include "partials/_empty.html" with icon="bi-shield" message="Aun no hay corridas. Ejecuta Pylint para obtener la primera nota." %}
+      {% endif %}
+    </div></div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card h-100"><div class="card-body">
+      <h2 class="h6 fw-semibold mb-3">Mensajes por categoria</h2>
+      {% if last_run %}{% include "quality/_counts.html" with run=last_run %}{% endif %}
+      <p class="small text-body-secondary mt-3 mb-0">
+        Pylint clasifica sus mensajes en <strong>C</strong>onvencion, <strong>R</strong>efactor, <strong>W</strong>arning,
+        <strong>E</strong>rror y <strong>F</strong>atal. La nota se calcula como
+        <code>10 - ((5*E + W + R + C) / sentencias) * 10</code>.
+      </p>
+    </div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="h6 fw-semibold mb-0">Corridas recientes</h2>
+    <a href="{% url 'quality:run-list' %}" class="small text-decoration-none">Ver historial <i class="bi bi-arrow-right"></i></a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead><tr><th>#</th><th>Fecha</th><th>Origen</th><th>Estado</th><th class="num">Nota</th></tr></thead>
+      <tbody>
+        {% for run in recent_runs|slice:":8" %}
+          <tr>
+            <td><a class="cell-code" href="{% url 'quality:run-detail' run.pk %}">{{ run.pk }}</a></td>
+            <td class="small">{{ run.created_at|date:"d M Y H:i" }}</td>
+            <td>{{ run.get_source_display }}</td>
+            <td><span class="badge-soft {{ run.status|status_soft }}">{{ run.get_status_display }}</span></td>
+            <td class="num fw-semibold">{{ run.score|default:"—" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">{% include "partials/_empty.html" with icon="bi-clock-history" message="Sin corridas registradas." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

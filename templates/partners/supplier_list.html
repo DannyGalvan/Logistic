@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Proveedores{% endblock %}
+{% block topbar_title %}<i class="bi bi-truck me-2 text-primary"></i>Proveedores{% endblock %}
+{% block content %}
+{% url 'partners:supplier-create' as create_url %}
+<div class="page-header">
+  <div>
+    <h1>Proveedores</h1>
+    <p class="page-subtitle">Empresas que te abastecen{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+  <a href="{% url 'partners:supplier-create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Nuevo proveedor
+  </a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>NIT</th>
+          <th>Contacto</th>
+          <th class="num">Entrega</th>
+          <th>Estado</th>
+          <th class="text-end"><span class="visually-hidden">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for supplier in suppliers %}
+          <tr>
+            <td><div class="cell-strong">{{ supplier.name }}</div><div class="small text-body-secondary">{{ supplier.contact_name|default:"" }}</div></td>
+            <td><span class="cell-code">{{ supplier.tax_id }}</span></td>
+            <td><div>{{ supplier.email|default:"—" }}</div><div class="small text-body-secondary">{{ supplier.phone }}</div></td>
+            <td class="num">{{ supplier.lead_time_days }} dias</td>
+            <td>{% if supplier.is_active %}<span class="badge-soft badge-soft-success">Activo</span>{% else %}<span class="badge-soft badge-soft-secondary">Inactivo</span>{% endif %}</td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-icon" href="{% url 'partners:supplier-update' supplier.pk %}" title="Editar" aria-label="Editar"><i class="bi bi-pencil-square"></i></a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">{% include "partials/_empty.html" with icon="bi-truck" message="Aun no hay proveedores." cta_url=create_url cta_label="Nuevo proveedor" %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

@@ -1,16 +1,23 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
-{% block title %}{{ object|default:'Nuevo usuario' }}{% endblock %}
+{% block title %}{% if object %}Editar usuario{% else %}Nuevo usuario{% endif %}{% endblock %}
+{% block topbar_title %}<i class="bi bi-people me-2 text-primary"></i>Usuarios{% endblock %}
 {% block content %}
-<h1 class="h3 mb-4">
-  {% if object %}Editar usuario{% else %}Nuevo usuario{% endif %}
-</h1>
-<form method="post" novalidate>
-  {% csrf_token %}
-  {% crispy form %}
-  <div class="d-flex gap-2 justify-content-end">
-    <a href="{% url 'accounts:user-list' %}" class="btn btn-outline-secondary">Cancelar</a>
-    <button type="submit" class="btn btn-primary">Guardar</button>
+<div class="form-card">
+  <a href="{% url 'accounts:user-list' %}" class="page-back"><i class="bi bi-arrow-left"></i> Volver</a>
+  <div class="page-header">
+    <div>
+      <h1>{% if object %}Editar usuario{% else %}Nuevo usuario{% endif %}</h1>
+      {% if object %}<p class="page-subtitle">@{{ object.username }}</p>{% endif %}
+    </div>
   </div>
-</form>
+  <form method="post" novalidate class="card">
+    {% csrf_token %}
+    <div class="card-body p-4"><div class="form-grid">{{ form|crispy }}</div></div>
+    <div class="card-footer d-flex gap-2 justify-content-end">
+      <a href="{% url 'accounts:user-list' %}" class="btn btn-outline-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Guardar</button>
+    </div>
+  </form>
+</div>
 {% endblock %}

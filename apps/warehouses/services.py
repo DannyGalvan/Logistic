@@ -29,6 +29,7 @@ def create_warehouse(
     name: str,
     address: str = "",
     manager=None,
+    is_active: bool = True,
     user=None,
 ) -> Warehouse:
     """Crea un almacen y sus ubicaciones por defecto."""
@@ -37,6 +38,7 @@ def create_warehouse(
         name=name,
         address=address,
         manager=manager,
+        is_active=is_active,
         created_by=user,
         updated_by=user,
     )
@@ -68,6 +70,7 @@ def create_location(
     code: str,
     name: str,
     location_type: str = Location.LocationType.STORAGE,
+    is_active: bool = True,
 ) -> Location:
     """Crea una ubicacion en un almacen."""
     return Location.objects.create(
@@ -75,6 +78,7 @@ def create_location(
         code=code,
         name=name,
         location_type=location_type,
+        is_active=is_active,
     )
 
 

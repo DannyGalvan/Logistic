@@ -29,10 +29,15 @@ class DashboardView(LoginRequiredMixin, PermissionRequiredMixin, View):
 
     def get(self, request: HttpRequest) -> HttpResponse:
         """Renderiza el dashboard."""
+        series = list(movements_by_day())
         context: dict[str, Any] = {
             "kpis": dashboard_kpis(),
             "top_products": list(top_moving_products()),
-            "movements_by_day": list(movements_by_day()),
+            "movements_by_day": series,
+            "chart_data": {
+                "labels": [row["day"].isoformat() for row in series],
+                "values": [row["count"] for row in series],
+            },
         }
         return render(request, self.template_name, context)
 

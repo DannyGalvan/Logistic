@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Corrida {{ run.pk }}{% endblock %}
+{% block topbar_title %}<i class="bi bi-shield-check me-2 text-primary"></i>Calidad de codigo{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Corrida #{{ run.pk }} · {{ run.score|default:"—" }}/10</h1>
+    <p class="page-subtitle">{{ run.created_at|date:"d M Y H:i" }} · <code>{{ run.target }}</code> · {{ run.get_source_display }} · <span class="badge-soft {{ run.status|status_soft }}">{{ run.get_status_display }}</span></p>
+  </div>
+  <a href="{% url 'quality:run-list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Volver</a>
+</div>
+{% include "quality/_nav.html" %}
+<div class="card mb-3"><div class="card-body">{% include "quality/_counts.html" %}</div></div>
+{% if run.error_detail %}<div class="alert alert-danger"><pre class="mb-0 small">{{ run.error_detail }}</pre></div>{% endif %}
+<div class="card">
+  <div class="card-header"><h2 class="h6 fw-semibold mb-0">Mensajes ({{ lint_messages|length }})</h2></div>
+  {% include "quality/_message_table.html" with message_rows=lint_messages %}
+</div>
+{% endblock %}

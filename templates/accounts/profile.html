@@ -1,34 +1,36 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 {% block title %}Mi perfil{% endblock %}
+{% block topbar_title %}<i class="bi bi-person-circle me-2 text-primary"></i>Mi perfil{% endblock %}
 {% block content %}
-<h1 class="h3 mb-4">Mi perfil</h1>
-<div class="row g-4">
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h2 class="h5 mb-3">Datos personales</h2>
-        <form method="post" novalidate>
-          {% csrf_token %}
-          <input type="hidden" name="action" value="profile">
-          {% crispy profile_form %}
-          <button type="submit" class="btn btn-primary">Guardar</button>
-        </form>
-      </div>
+<div class="card mb-4">
+  <div class="card-body d-flex align-items-center gap-3 p-4">
+    <span class="avatar" style="width:4rem;height:4rem;font-size:1.5rem">{{ user.get_username|slice:":1"|upper }}</span>
+    <div>
+      <h1 class="h4 fw-bold mb-1">{{ user.get_full_name|default:user.get_username }}</h1>
+      <div class="text-body-secondary">@{{ user.get_username }}{% if user.email %} · {{ user.email }}{% endif %}</div>
     </div>
+    <span class="ms-auto badge-soft badge-soft-primary">{% if user.is_superuser %}Superusuario{% else %}{{ user.role|default:'Usuario' }}{% endif %}</span>
   </div>
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h2 class="h5 mb-3">Cambiar contrasena</h2>
-        <form method="post" novalidate>
-          {% csrf_token %}
-          <input type="hidden" name="action" value="password">
-          {% crispy password_form %}
-          <button type="submit" class="btn btn-warning">Cambiar</button>
-        </form>
-      </div>
-    </div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <form method="post" novalidate class="card h-100">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="profile">
+      <div class="card-header"><h2 class="h6 fw-semibold mb-0"><i class="bi bi-person me-2"></i>Datos personales</h2></div>
+      <div class="card-body p-4">{{ profile_form|crispy }}</div>
+      <div class="card-footer text-end"><button type="submit" class="btn btn-primary">Guardar cambios</button></div>
+    </form>
+  </div>
+  <div class="col-lg-6">
+    <form method="post" novalidate class="card h-100">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="password">
+      <div class="card-header"><h2 class="h6 fw-semibold mb-0"><i class="bi bi-shield-lock me-2"></i>Cambiar contrasena</h2></div>
+      <div class="card-body p-4">{{ password_form|crispy }}</div>
+      <div class="card-footer text-end"><button type="submit" class="btn btn-outline-secondary">Actualizar contrasena</button></div>
+    </form>
   </div>
 </div>
 {% endblock %}

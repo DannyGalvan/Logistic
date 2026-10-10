@@ -27,6 +27,7 @@ from apps.catalog.models import Brand, Category, Product, UnitOfMeasure
 from apps.inventory.services import InventoryService
 from apps.partners.models import Customer, Supplier
 from apps.purchasing.models import PurchaseOrder
+from apps.warehouses.models import Warehouse
 from apps.purchasing.services import PurchaseService, ReceiptLineInput
 from apps.sales.models import SalesOrder
 from apps.sales.services import SalesService, ShipLineInput
@@ -148,7 +149,6 @@ class Command(BaseCommand):
         """Crea almacenes con ubicaciones por defecto si no existen."""
         result: dict[str, object] = {}
         for code, name in [("CEN", "Central"), ("NOR", "Norte")]:
-            from apps.warehouses.models import Warehouse
             warehouse = Warehouse.objects.filter(code=code).first()
             if warehouse is None:
                 warehouse = create_warehouse(code=code, name=name)

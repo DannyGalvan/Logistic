@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Existencias{% endblock %}
+{% block topbar_title %}<i class="bi bi-boxes me-2 text-primary"></i>Existencias{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Existencias</h1>
+    <p class="page-subtitle">Cantidad disponible por producto, ubicacion y lote{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Ubicacion</th>
+          <th>Lote</th>
+          <th class="num">Cantidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for stock in stocks %}
+          <tr>
+            <td><div class="cell-strong">{{ stock.product.name }}</div><span class="cell-code small">{{ stock.product.sku }}</span></td>
+            <td>{{ stock.location }}</td>
+            <td>{{ stock.lot.lot_number|default:'—' }}</td>
+            <td class="num"><span class="fw-semibold">{{ stock.quantity|qty }}</span></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">{% include "partials/_empty.html" with icon="bi-boxes" message="No hay existencias registradas. Registra una entrada para empezar." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

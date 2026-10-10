@@ -50,9 +50,11 @@ class CategoryCreateView(CreateView):
 
     def form_valid(self, form):
         """Llama al service y muestra feedback."""
-        category = services.create_category(**form.cleaned_data)
-        messages.success(self.request, f"Categoria '{category.name}' creada.")
-        return super().form_valid(form)
+        self.object = services.create_category(  # pylint: disable=attribute-defined-outside-init
+            **form.cleaned_data
+        )
+        messages.success(self.request, f"Categoria '{self.object.name}' creada.")
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class CategoryUpdateView(UpdateView):
@@ -156,11 +158,11 @@ class ProductCreateView(CreateView):
 
     def form_valid(self, form):
         """Llama al service."""
-        product = services.create_product(
+        self.object = services.create_product(  # pylint: disable=attribute-defined-outside-init
             user=self.request.user, **form.cleaned_data
         )
-        messages.success(self.request, f"Producto '{product.sku}' creado.")
-        return super().form_valid(form)
+        messages.success(self.request, f"Producto '{self.object.sku}' creado.")
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class ProductUpdateView(UpdateView):
@@ -179,7 +181,7 @@ class ProductUpdateView(UpdateView):
         messages.success(
             self.request, f"Producto '{self.object.sku}' actualizado."
         )
-        return super().form_valid(form)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class ProductDeactivateView(DeleteView):

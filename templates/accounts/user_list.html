@@ -1,48 +1,54 @@
 {% extends 'base.html' %}
 {% block title %}Usuarios{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3 mb-0">Usuarios</h1>
-  <a href="{% url 'accounts:user-create' %}" class="btn btn-primary">
-    <i class="bi bi-plus-lg"></i> Nuevo usuario
-  </a>
+{% url 'accounts:user-create' as create_url %}
+<div class="page-header">
+  <div>
+    <h1>Usuarios</h1>
+    <p class="page-subtitle">Cuentas con acceso al sistema{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+  <a href="{{ create_url }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo usuario</a>
 </div>
-<div class="table-responsive">
-  <table class="table table-striped align-middle">
-    <thead>
-      <tr>
-        <th>Usuario</th>
-        <th>Nombre</th>
-        <th>Correo</th>
-        <th>Rol</th>
-        <th>Activo</th>
-        <th class="text-end">Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for user in users %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
         <tr>
-          <td>{{ user.username }}</td>
-          <td>{{ user.get_full_name|default:'-' }}</td>
-          <td>{{ user.email|default:'-' }}</td>
-          <td>{{ user.role|default:'-' }}</td>
-          <td>
-            {% if user.is_active %}
-              <span class="badge bg-success">Si</span>
-            {% else %}
-              <span class="badge bg-secondary">No</span>
-            {% endif %}
-          </td>
-          <td class="text-end">
-            <a class="btn btn-sm btn-outline-secondary"
-               href="{% url 'accounts:user-update' user.pk %}">Editar</a>
-          </td>
+          <th>Usuario</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th class="text-end"><span class="visually-hidden">Acciones</span></th>
         </tr>
-      {% empty %}
-        <tr><td colspan="6" class="text-center text-secondary py-4">Sin usuarios.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for user_obj in users %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="avatar avatar-sm">{{ user_obj.username|slice:":1"|upper }}</span>
+                <div>
+                  <div class="cell-strong">{{ user_obj.get_full_name|default:user_obj.username }}</div>
+                  <div class="small text-body-secondary">@{{ user_obj.username }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ user_obj.email|default:'-' }}</td>
+            <td><span class="badge-soft badge-soft-primary">{{ user_obj.role|default:'Sin rol' }}</span></td>
+            <td>
+              {% if user_obj.is_active %}<span class="badge-soft badge-soft-success">Activo</span>
+              {% else %}<span class="badge-soft badge-soft-secondary">Inactivo</span>{% endif %}
+            </td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-icon" href="{% url 'accounts:user-update' user_obj.pk %}" title="Editar" aria-label="Editar"><i class="bi bi-pencil-square"></i></a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">{% include "partials/_empty.html" with icon="bi-people" message="Aun no hay usuarios." cta_url=create_url cta_label="Nuevo usuario" %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
 </div>
-{% include "partials/_pagination.html" %}
 {% endblock %}

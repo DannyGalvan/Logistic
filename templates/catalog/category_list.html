@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block title %}Categorias{% endblock %}
+{% block topbar_title %}<i class="bi bi-diagram-3 me-2 text-primary"></i>Categorias{% endblock %}
+{% block content %}
+{% url 'catalog:category-create' as create_url %}
+<div class="page-header">
+  <div>
+    <h1>Categorias</h1>
+    <p class="page-subtitle">Agrupa productos por familia{% if paginator %} · {{ paginator.count }} registro{{ paginator.count|pluralize }}{% endif %}</p>
+  </div>
+  <a href="{% url 'catalog:category-create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Nueva categoria
+  </a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-modern">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Categoria padre</th>
+          <th>Descripcion</th>
+          <th class="text-end"><span class="visually-hidden">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in categories %}
+          <tr>
+            <td><span class="cell-strong">{{ category.name }}</span></td>
+            <td>{{ category.parent|default:'—' }}</td>
+            <td><span class="text-body-secondary">{{ category.description|default:"—" }}</span></td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-icon" href="{% url 'catalog:category-update' category.pk %}" title="Editar" aria-label="Editar"><i class="bi bi-pencil-square"></i></a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">{% include "partials/_empty.html" with icon="bi-diagram-3" message="Aun no hay categorias." cta_url=create_url cta_label="Nueva categoria" %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer">{% include "partials/_pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

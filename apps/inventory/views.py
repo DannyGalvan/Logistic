@@ -9,7 +9,7 @@ from __future__ import annotations
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView
+from django.views.generic import CreateView, FormView, ListView
 
 from apps.core.views import LoginRequiredMixin, PermissionRequiredMixin
 
@@ -51,7 +51,7 @@ class MovementListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
 
 
 class _MovementCreateView(  # pylint: disable=too-few-public-methods
-    LoginRequiredMixin, PermissionRequiredMixin, CreateView
+    LoginRequiredMixin, PermissionRequiredMixin, FormView
 ):
     """Clase base para formularios de stock."""
 
@@ -62,9 +62,13 @@ class _MovementCreateView(  # pylint: disable=too-few-public-methods
         """Devuelve el ``InventoryService`` (inyeccion)."""
         return services.InventoryService()
 
+    def get_service_kwargs(self, data: dict) -> dict:
+        """Adapta ``cleaned_data`` a la firma del metodo del service."""
+        return dict(data)
+
     def form_valid(self, form):
         """Llama al service y muestra feedback."""
-        data = form.cleaned_data
+        data = self.get_service_kwargs(form.cleaned_data)
         method = getattr(self.get_service(), self.method_name)
         try:
             method(user=self.request.user, **data)
@@ -83,6 +87,12 @@ class ReceiveView(_MovementCreateView):
     template_name = "inventory/receive_form.html"
     success_url = reverse_lazy("inventory:movement-list")
     method_name = "receive"
+
+    def get_service_kwargs(self, data: dict) -> dict:
+        """``warehouse`` solo filtra ubicaciones; no va al service."""
+        data = dict(data)
+        data.pop("warehouse", None)
+        return data
 
 
 class IssueView(_MovementCreateView):
@@ -104,6 +114,12 @@ class TransferView(_MovementCreateView):
     success_url = reverse_lazy("inventory:movement-list")
     method_name = "transfer"
 
+    def get_service_kwargs(self, data: dict) -> dict:
+        """El form usa ``location`` como origen."""
+        data = dict(data)
+        data["from_location"] = data.pop("location")
+        return data
+
 
 class AdjustView(_MovementCreateView):
     """Vista de ajuste."""
@@ -113,6 +129,13 @@ class AdjustView(_MovementCreateView):
     template_name = "inventory/adjust_form.html"
     success_url = reverse_lazy("inventory:movement-list")
     method_name = "adjust"
+
+    def get_service_kwargs(self, data: dict) -> dict:
+        """El ajuste usa ``counted_quantity`` y ``note``."""
+        data = dict(data)
+        data.pop("quantity", None)
+        data["note"] = data.pop("reference", "")
+        return data
 
 
 class AlertListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
