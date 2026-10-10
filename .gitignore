@@ -1,0 +1,66 @@
+# --- Python / venv ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+*.egg
+build/
+dist/
+.eggs/
+
+# --- Django ---
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# --- pytest / coverage ---
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+
+# --- entorno y secretos ---
+.env
+.env.*
+!.env.example
+
+# --- Pylint ---
+.pylint.d/
+reports/
+
+# --- Node (assets) ---
+node_modules/
+.npm/
+
+# --- IDEs ---
+.idea/*
+!.idea/runConfigurations/
+!.idea/inspectionProfiles/
+.vscode/*
+!.vscode/launch.json
+*.swp
+*.swo
+.DS_Store
+
+# --- Docker ---
+.docker-data/
+
+# --- Miscelanea ---
+*.bak
+*.orig
+*.tmp
+*.pid
+*.seed
+*.pid.lock

@@ -1,0 +1,40 @@
+[MAIN]
+load-plugins=pylint_django
+django-settings-module=config.settings.test
+ignore=migrations
+ignore-paths=^apps/quality/snippets/.*$
+jobs=0
+py-version=3.14
+fail-under=9.5
+persistent=no
+
+[MESSAGES CONTROL]
+# too-few-public-methods: las clases Meta de Django, DTOs y Protocols
+# tienen pocos metodos por diseno. Aceptamos la advertencia como ruido.
+# wildcard-import + unused-wildcard-import: patron canonico de Django
+# para modulos de configuracion (importar todo desde ``base`` y sobreescribir).
+# too-many-ancestors: BaseListView apila 5 mixins de Django por diseño;
+# no aporta valor obligar a refactorizar.
+disable=too-few-public-methods,
+        wildcard-import,
+        unused-wildcard-import,
+        too-many-ancestors
+
+[FORMAT]
+max-line-length=100
+
+[DESIGN]
+max-args=6
+max-positional-arguments=6
+max-attributes=10
+max-locals=15
+max-returns=6
+max-branches=12
+
+[BASIC]
+good-names=i,j,k,pk,id,qs,_,urlpatterns,app_name,register
+
+[REPORTS]
+output-format=colorized
+reports=no
+score=yes
