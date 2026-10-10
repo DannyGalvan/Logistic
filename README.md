@@ -1,433 +1,450 @@
 # StockFlow
 
-> Sistema de inventario y logistica para PyME, con modulo web de calidad Pylint integrado.
-> Proyecto academico: UMG - Ingenieria en Sistemas, curso Calidad de Software.
+Sistema de **inventario y logistica** construido con Django 5.2 + Django REST Framework, que
+ademas sirve como **demostracion del uso de Pylint** en un proyecto real (UMG — Ingenieria en
+Sistemas, curso *Calidad de Software*).
 
-[![Python](https://img.shields.io/badge/python-3.14-blue.svg)](https://www.python.org/downloads/release/python-3140/)
-[![Django](https://img.shields.io/badge/django-5.2-success.svg)](https://docs.djangoproject.com/en/5.2/)
-[![DRF](https://img.shields.io/badge/DRF-3.18-red.svg)](https://www.django-rest-framework.org/)
-[![Pylint](https://img.shields.io/badge/pylint-4.1-yellowgreen.svg)](https://pylint.pycqa.org/)
-[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-17%20passing-brightgreen.svg)](#tests-y-cobertura)
-[![Coverage](https://img.shields.io/badge/coverage-Pending-orange.svg)](#tests-y-cobertura)
+- Codigo con arquitectura por capas (vistas → services → modelos), principios SOLID y patrones de diseno.
+- Pylint obligatorio: `.pylintrc` versionado, `make lint`, pre-commit, CI y un modulo web **/calidad/**
+  que ejecuta Pylint y explica los mensajes en espanol.
+- 200 tests (pytest) con cobertura ≥ 90 % y Pylint **10.00/10**.
 
----
+Plan de implementacion: [`plans/plan-app-inventario.md`](plans/plan-app-inventario.md) ·
+Avance: [`plans/PROGRESS.md`](plans/PROGRESS.md) · Teoria de Pylint: [`plans/Pylint.md`](plans/Pylint.md) ·
+Arquitectura: [`docs/arquitectura.md`](docs/arquitectura.md)
 
 ## Tabla de contenidos
 
-1. [Descripcion general](#descripcion-general)
-2. [Estado del proyecto](#estado-del-proyecto)
-3. [Stack tecnologico](#stack-tecnologico)
-4. [Requisitos previos](#requisitos-previos)
-5. [Configuracion del entorno (.env)](#configuracion-del-entorno-env)
-6. [Formas de ejecucion](#formas-de-ejecucion)
-7. [Estructura del repositorio](#estructura-del-repositorio)
-8. [Pylint: que es y como se usa](#pylint-que-es-y-como-se-usa)
-9. [Tests y cobertura](#tests-y-cobertura)
-10. [Debug](#debug)
-11. [API REST](#api-rest)
-12. [Arquitectura y patrones](#arquitectura-y-patrones)
-13. [Como agregar una app nueva](#como-agregar-una-app-nueva)
-14. [Troubleshooting](#troubleshooting)
-15. [Licencia](#licencia)
+1. [Descripcion y arquitectura](#1-descripcion-y-arquitectura)
+2. [Funcionalidades y roles](#2-funcionalidades-y-roles)
+3. [Requisitos](#3-requisitos)
+4. [Configuracion (.env)](#4-configuracion-env)
+5. [Formas de ejecucion](#5-formas-de-ejecucion)
+6. [Usuarios demo](#6-usuarios-demo)
+7. [Pylint](#7-pylint)
+8. [Tests y cobertura](#8-tests-y-cobertura)
+9. [Debug](#9-debug)
+10. [API REST](#10-api-rest)
+11. [Arquitectura: capas, SOLID y patrones](#11-arquitectura-capas-solid-y-patrones)
+12. [Estructura de carpetas y como agregar una app](#12-estructura-de-carpetas-y-como-agregar-una-app)
+13. [Troubleshooting](#13-troubleshooting)
 
 ---
 
-## Descripcion general
+## 1. Descripcion y arquitectura
 
-StockFlow es un sistema de inventario y logistica para pequenas y medianas empresas, construido con Django 5.2 y Django REST Framework. La aplicacion cubre el ciclo completo:
+StockFlow cubre el ciclo completo de una bodega:
 
-- Catalogo de productos con categorias, marcas, unidades de medida y estrategias de rotacion (FIFO / FEFO).
-- Almacenes con ubicaciones fisicas tipificadas (recepcion, almacenamiento, picking, despacho, cuarentena).
-- Gestion de stock con lotes, fechas de caducidad, alertas (bajo minimo, proximo a vencer, vencido) y conteos ciclicos con aprobacion.
-- Compras (OC) con confirmacion, recepcion parcial y total, y calculo de costo promedio ponderado.
-- Ventas (OV) con confirmacion, picking sugerido por estrategia y despacho parcial o total.
-- Kardex (historial valorizado), valoracion de inventario y movimientos por dia.
-- Auditoria inmutable de cambios y autenticaciones.
-- Exportadores CSV / Excel / PDF para todos los reportes.
-- API REST documentada con OpenAPI/Swagger.
-- Modulo web "Calidad" que ejecuta Pylint sobre el codigo del proyecto y permite analizar snippets didacticos.
+- **Catalogo**: productos con categorias, marcas, unidades y estrategia de rotacion (FIFO / FEFO), lotes y caducidad.
+- **Almacenes** con ubicaciones tipificadas (recepcion, almacenamiento, despacho, cuarentena).
+- **Inventario**: entradas, salidas, transferencias, ajustes, kardex valorizado, alertas (bajo minimo, por vencer, vencido) y conteos ciclicos con aprobacion.
+- **Compras** (OC): confirmacion, recepcion parcial/total con lotes y **costo promedio ponderado**.
+- **Ventas** (OV): confirmacion, **picking sugerido** (FEFO/FIFO) y despacho parcial/total.
+- **Reportes**: dashboard con KPIs y graficos, exportacion CSV / Excel / PDF.
+- **Auditoria**: bitacora de altas, cambios (con diff), bajas e inicios/cierres/fallos de sesion.
+- **Calidad**: ejecuta Pylint sobre el proyecto, guarda corridas, analiza snippets y explica cada mensaje.
 
-La pieza central de la demostracion academica es la app `quality`: ejecuta Pylint contra `apps/` y `config/`, persiste las corridas, expone un catalogo en espanol de los mensajes mas frecuentes (tomado de `Pylint.md`) y permite comparar corridas para ver mejoras o regresiones.
-
-## Estado del proyecto
-
-| Fase | Descripcion | Estado |
-|------|-------------|--------|
-| 1 | Esqueleto: configuracion, `core`, plantillas, base de tests | Completado |
-| 2 | `accounts`: usuarios, roles, login, fixtures por rol | Pendiente |
-| 3 | Maestros: `catalog`, `warehouses`, `partners` | Pendiente |
-| 4 | `inventory`: stock, lotes, conteos, alertas | Pendiente |
-| 5 | `purchasing`, `sales` | Pendiente |
-| 6 | `reports`, `audit` | Pendiente |
-| 7 | `quality`: modulo Pylint completo | Pendiente |
-| 8 | UX final, seed demo, documentacion API | Pendiente |
-| 9 | Endurecimiento: cobertura 90 %, Pylint 10/10 | Pendiente |
-| 10 | DevOps: Docker, CI, IDE | Pendiente |
-
-El plan completo esta en [`plans/plan-app-inventario.md`](plans/plan-app-inventario.md). La referencia teorica de Pylint esta en [`Pylint.md`](Pylint.md).
-
-## Stack tecnologico
-
-| Componente | Version | Proposito |
-|------------|---------|-----------|
-| Python | 3.14 | Lenguaje base |
-| Django | 5.2 | Framework web |
-| Django REST Framework | 3.18 | API REST |
-| drf-spectacular | 0.28 | OpenAPI/Swagger |
-| django-environ | 0.12 | Carga de `.env` |
-| psycopg[binary] | 3.3 | Driver PostgreSQL |
-| django-htmx | 1.23 | Interacciones HTMX |
-| django-filter | 25.1 | Filtrado de querysets |
-| django-crispy-forms | 2.4 | Formularios |
-| openpyxl | 3.1 | Exportador XLSX |
-| reportlab | 4.4 | Exportador PDF |
-| whitenoise | 6.9 | Archivos estaticos |
-| Pylint | 4.1 | Linter (version base, >=10.00/10 mantenido) |
-| pylint-django | 2.6 | Plugin Pylint para Django |
-| pytest | 9.1 | Framework de tests |
-| pytest-django | 4.14 | Integracion pytest + Django |
-| factory-boy | 3.3 | Fixtures de modelos |
-
-## Requisitos previos
-
-Antes de clonar el repositorio, asegurese de tener:
-
-| Herramienta | Version minima | macOS | Linux | Windows |
-|-------------|----------------|-------|-------|---------|
-| Python | 3.14 | `brew install python@3.14` | `apt install python3.14` (o build desde fuente) | Instalador desde python.org |
-| uv | 0.12+ | `brew install uv` | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | `winget install astral-sh.uv` |
-| Git | 2.40+ | `brew install git` | `apt install git` | `winget install git.git` |
-| PostgreSQL (servidor academico) | 13+ | Acceso por red al server configurado | Acceso por red al server configurado | Acceso por red al server configurado |
-| make | cualquier | `xcode-select --install` | `apt install build-essential` | `winget install gnuwin32-make` |
-| Graphviz (opcional, para UML) | 2.50+ | `brew install graphviz` | `apt install graphviz` | `winget install graphviz` |
-| Docker (opcional) | 24+ | Docker Desktop | docker-ce | Docker Desktop |
-
-> Si su sistema no tiene Python 3.14 con wheels disponibles para todos los paquetes, cree el venv con 3.13: `uv venv --python 3.13 .venv`. Toda la configuracion es compatible hacia abajo.
-
-> La cadena de conexion a PostgreSQL se lee exclusivamente desde la variable `DATABASE_URL` definida en `.env`. El repositorio no contiene credenciales; cada despliegue debe generar sus propias.
-
-## Configuracion del entorno (.env)
-
-Copie la plantilla incluida:
-
-```bash
-cp .env.example .env
+```mermaid
+flowchart LR
+    U[Navegador<br/>Templates + Bootstrap 5 + HTMX] --> V[Vistas web]
+    C[Cliente API<br/>Token / Sesion] --> A[ViewSets DRF /api/v1/]
+    V --> S[Services<br/>reglas de negocio]
+    A --> S
+    V --> Q[Selectors<br/>lecturas]
+    A --> Q
+    S --> M[(Modelos)] --> PG[(PostgreSQL)]
+    Q --> M
+    S -. eventos .-> O[Observers<br/>alertas / auditoria]
+    S --> P[[Pylint<br/>subproceso]]
 ```
 
-Edite `.env` con sus valores. Las claves disponibles son:
+Detalle completo (capas, patrones, flujos de estado, permisos) en [`docs/arquitectura.md`](docs/arquitectura.md).
+Diagramas UML generados con `pyreverse` en [`docs/uml/`](docs/uml/).
 
-| Variable | Obligatorio | Default | Descripcion |
-|----------|-------------|---------|-------------|
-| `DJANGO_SETTINGS_MODULE` | No | `config.settings.dev` | Modulo de configuracion activo |
-| `DJANGO_SECRET_KEY` | Si | (none) | Clave secreta de Django (use `python -c "from django.core.management.utils import get_random_secret_key as g; print(g())"`) |
-| `DJANGO_DEBUG` | No | `False` | Habilita modo debug |
-| `DJANGO_ALLOWED_HOSTS` | No | `localhost,127.0.0.1` | Hosts permitidos separados por coma |
-| `DJANGO_CSRF_TRUSTED_ORIGINS` | No | (vacio) | Origenes CSRF confiables |
-| `DATABASE_URL` | Si | (plantilla) | Cadena `postgres://USER:PASS@HOST:PORT/DB` |
-| `TEST_DATABASE_NAME` | No | `test_logistic` | Nombre de la BD que pytest crea/usa |
-| `DB_CONN_MAX_AGE` | No | `60` | Tiempo de vida de conexiones (s) |
-| `TIME_ZONE` | No | `America/Guatemala` | Zona horaria |
-| `LANGUAGE_CODE` | No | `es` | Idioma de la UI |
-| `PYLINT_TARGETS` | No | `apps,config` | Targets para Pylint |
-| `PYLINT_FAIL_UNDER` | No | `9.5` | Nota minima aceptable |
-| `PYLINT_TIMEOUT` | No | `180` | Timeout para Pylint (s) |
-| `PYLINT_SNIPPET_MAX_BYTES` | No | `20000` | Tamanio maximo de snippet a analizar |
-| `EXPIRY_ALERT_DAYS` | No | `30` | Dias para alerta de proximo a vencer |
+## 2. Funcionalidades y roles
 
-## Formas de ejecucion
+| Modulo | URL | Que permite |
+|--------|-----|-------------|
+| Inicio | `/` | KPIs, acciones rapidas, movimientos recientes, stock bajo minimo |
+| Catalogo | `/catalogo/` | Productos, categorias, marcas, unidades |
+| Almacenes | `/almacenes/` | Almacenes y ubicaciones |
+| Socios | `/socios/` | Proveedores y clientes |
+| Inventario | `/inventario/` | Stock, movimientos, entrada/salida/transferencia/ajuste, lotes, alertas, kardex, conteos |
+| Compras | `/compras/` | OC: lineas, confirmar, recibir (lote/caducidad), cancelar |
+| Ventas | `/ventas/` | OV: lineas, confirmar, picking sugerido, despachar, cancelar |
+| Reportes | `/reportes/` | Dashboard, grafico de movimientos, exportar valoracion CSV/XLSX/PDF |
+| Auditoria | `/auditoria/` | Bitacora con diff de cambios y accesos |
+| Calidad | `/calidad/` | Ejecutar Pylint, historial, detalle de mensajes, analizador de snippets, catalogo |
+| Admin | `/admin/` | Django admin con todos los modelos |
+| API | `/api/v1/`, `/api/docs/` | REST + Swagger |
 
-El proyecto ofrece seis formas de ejecutar la aplicacion. Elija la que mejor se adapte a su entorno.
+**Matriz de roles** (generada desde `apps/accounts/roles.py`):
 
-### a) `uv` + Make (recomendado, multiplataforma)
+| Funcion | Administrador | Supervisor | Almacenista | Compras | Ventas | Consulta |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|
+| Catalogo (editar) | ✔ | ✔ | — | — | — | — |
+| Almacenes (editar) | ✔ | ✔ | — | — | — | — |
+| Proveedores | ✔ | ✔ | — | ✔ | — | ✔ |
+| Clientes | ✔ | ✔ | — | — | ✔ | ✔ |
+| Movimientos de stock | ✔ | ✔ | ✔ | — | — | — |
+| Kardex | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Crear conteo | ✔ | ✔ | ✔ | — | — | — |
+| Aprobar conteo | ✔ | ✔ | — | — | — | — |
+| Crear OC | ✔ | — | — | ✔ | — | — |
+| Confirmar OC | ✔ | ✔ | — | ✔ | — | — |
+| Recibir OC | ✔ | ✔ | ✔ | — | — | — |
+| Crear OV | ✔ | — | — | — | ✔ | — |
+| Confirmar OV | ✔ | ✔ | — | — | ✔ | — |
+| Despachar OV | ✔ | ✔ | ✔ | — | — | — |
+| Reportes | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Auditoria | ✔ | ✔ | — | — | — | — |
+| Ver calidad | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Ejecutar Pylint | ✔ | ✔ | — | — | — | — |
+| Usuarios | ✔ | — | — | — | — | — |
+
+El rol se asigna en **Usuarios** (o `seed_demo`); `assign_role` sincroniza el `Group` de permisos.
+Los menus y botones se ocultan segun permisos y las acciones prohibidas devuelven **403**.
+
+## 3. Requisitos
+
+- Python **3.12+** (probado con 3.13 en Docker y 3.14 local) y [`uv`](https://docs.astral.sh/uv/) (recomendado) o `pip`.
+- Acceso a una base **PostgreSQL** (la del proyecto es remota; ver `.env`).
+- Opcional: Docker / Docker Compose, Graphviz (`dot`) para UML en PNG/SVG, `make`.
+
+## 4. Configuracion (.env)
 
 ```bash
-# 1. Crear venv y verificar configuracion
-make setup
+cp .env.example .env     # y edite los valores
+```
 
-# 2. Aplicar migraciones
+| Variable | Ejemplo | Descripcion |
+|----------|---------|-------------|
+| `DJANGO_SETTINGS_MODULE` | `config.settings.dev` | `dev`, `prod` o `test` |
+| `DJANGO_SECRET_KEY` | *(generada)* | `python -c "import secrets; print(secrets.token_urlsafe(50))"` |
+| `DJANGO_DEBUG` | `True` | Solo en desarrollo |
+| `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1` | Obligatorio en prod |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | `http://localhost:8000` | Origenes para CSRF |
+| `DATABASE_URL` | `postgres://USER:PASSWORD@HOST:PORT/DBNAME` | Conexion principal |
+| `TEST_DATABASE_NAME` | `test_logistic` | BD de pruebas cuando se usa Postgres |
+| `DB_CONN_MAX_AGE` | `60` | Conexiones persistentes (s) |
+| `TIME_ZONE` / `LANGUAGE_CODE` | `America/Guatemala` / `es` | Localizacion |
+| `PYLINT_TARGETS` | `apps,config` | Que analiza el modulo Calidad |
+| `PYLINT_FAIL_UNDER` | `9.5` | Umbral de `run_pylint` |
+| `PYLINT_TIMEOUT` | `180` | Segundos maximos por corrida |
+| `PYLINT_SNIPPET_MAX_BYTES` | `20000` | Tamano maximo de snippet |
+| `EXPIRY_ALERT_DAYS` | `30` | Dias para alertar lotes por vencer |
+| `SEED_DEMO_PASSWORD` | `Cambia-en-produccion-1234` | Contrasena de los usuarios demo |
+| `DJANGO_SECURE_SSL_REDIRECT` / `DJANGO_SECURE_COOKIES` / `DJANGO_SECURE_HSTS_SECONDS` | `1` / `1` / `31536000` | Endurecimiento prod (Compose los pone en `0` para probar en `http://localhost`) |
+| `TEST_DATABASE_ENGINE` | `postgres` | Hace que `pytest` use `DATABASE_URL` en vez de SQLite |
+
+> `.env` esta en `.gitignore`: nunca versione credenciales reales.
+> Si un valor contiene `$`, escapelo como `$$` (Docker Compose interpreta `$NOMBRE` como variable).
+
+## 5. Formas de ejecucion
+
+### a) venv + pip paso a paso
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate           # Windows: .venv\Scripts\activate
+pip install -r requirements/dev.txt
+cp .env.example .env                # editar DATABASE_URL y DJANGO_SECRET_KEY
+python manage.py migrate
+python manage.py seed_demo          # datos demo (solo con DEBUG=True)
+python manage.py runserver          # http://localhost:8000
+```
+
+### b) uv
+
+```bash
+uv venv .venv && source .venv/bin/activate
+uv pip install -r requirements/dev.txt
+python manage.py migrate && python manage.py seed_demo && python manage.py runserver
+```
+
+### c) Makefile
+
+```bash
+make setup     # .venv + dependencias + .env + pre-commit install
 make migrate
-
-# 3. (Pendiente Fase 8) Cargar datos demo
 make seed
-
-# 4. Lanzar servidor de desarrollo
 make run
 ```
 
-Aplicacion disponible en <http://localhost:8000>.
+Otros targets: `test`, `test-fast`, `cov`, `lint`, `lint-json`, `lint-report`, `uml`, `check`,
+`docker-up`, `docker-debug`, `docker-down`, `superuser`.
 
-### b) `uv` + comandos directos
-
-```bash
-uv venv --python 3.14 --clear .venv
-VIRTUAL_ENV=$(pwd)/.venv uv pip install -r requirements/dev.txt
-test -f .env || cp .env.example .env
-.venv/bin/python manage.py check
-.venv/bin/python manage.py migrate
-.venv/bin/python manage.py runserver 0.0.0.0:8000
-```
-
-### c) `venv` + pip tradicional
-
-```bash
-python3.14 -m venv .venv
-source .venv/bin/activate            # macOS / Linux
-# .venv\Scripts\activate            # Windows (PowerShell)
-pip install -r requirements/dev.txt
-cp .env.example .env
-python manage.py migrate
-python manage.py runserver 0.0.0.0:8000
-```
-
-### d) Windows PowerShell (`run.ps1`)
-
-En Windows use el script `scripts/run.ps1`:
+### d) Windows (PowerShell)
 
 ```powershell
 pwsh scripts/run.ps1 -Task setup
 pwsh scripts/run.ps1 -Task migrate
+pwsh scripts/run.ps1 -Task seed
 pwsh scripts/run.ps1 -Task run
 ```
 
-Tareas disponibles: `setup`, `migrate`, `seed`, `run`, `test`, `test-fast`, `cov`, `lint`, `lint-json`, `lint-report`, `check`, `superuser`.
+Acepta los mismos nombres de tarea que el Makefile.
 
 ### e) Docker
 
 ```bash
-docker compose up --build
+docker compose up --build          # http://localhost:8000 (gunicorn + WhiteNoise, settings prod)
 ```
 
-La imagen usa `python:3.13-slim`, instala `requirements/prod.txt` y ejecuta `gunicorn`. Ajuste `DJANGO_SETTINGS_MODULE` a `config.settings.prod` en `.env` antes de levantar.
+La imagen es multi-stage (`python:3.13-slim`, usuario no root). El entrypoint aplica migraciones
+(`DJANGO_MIGRATE=0` para omitirlas). **No hay servicio de BD**: usa `DATABASE_URL` del `.env`.
 
-### f) Docker con perfil debug (para VS Code / PyCharm)
+### f) Docker en modo debug
 
 ```bash
-docker compose --profile debug up
+docker compose --profile debug up --build web-debug
 ```
 
-Levanta `web-debug` con `debugpy` escuchando en `0.0.0.0:5678`. Conectese desde su IDE para depurar.
+Levanta `runserver` bajo `debugpy` escuchando en el puerto **5678**, con el codigo montado como
+volumen y la debug toolbar habilitada. Ver [Debug](#9-debug) para adjuntar el IDE.
 
-## Estructura del repositorio
+## 6. Usuarios demo
 
-```
-.
-|-- manage.py                          # Entrada CLI de Django
-|-- pyproject.toml                     # Dependencias + pytest + coverage + pylint
-|-- requirements/{base,dev,prod}.txt   # Pinning por entorno
-|-- .pylintrc                          # Configuracion de Pylint (nota >= 9.5)
-|-- .editorconfig                      # Estilo de codigo
-|-- .pre-commit-config.yaml            # Hooks de pre-commit (incluye pylint)
-|-- Makefile                           # Atajos multiplataforma
-|-- scripts/run.ps1                    # Equivalente Windows del Makefile
-|-- config/                            # Paquete de configuracion
-|   |-- settings/{base,dev,prod,test}  # Configuracion dividida por entorno
-|   |-- urls.py                        # Enrutador raiz
-|   |-- api_urls.py                    # Enrutador de API REST
-|   |-- wsgi.py  asgi.py
-|-- apps/                              # Aplicaciones Django
-|   |-- core/                          # Modelos abstractos, menu, estado, mixins
-|   |-- accounts/                      # Usuarios, roles (stub Fase 1)
-|   |-- catalog/ warehouses/ partners/ # Maestros (stubs)
-|   |-- purchasing/ sales/              # Operaciones (stubs)
-|   |-- inventory/                     # Nucleo (stub)
-|   |-- reports/ audit/                # Reportes y bitacora (stubs)
-|   |-- quality/                       # Modulo Pylint (stub)
-|-- templates/                         # Plantillas Django (base, partials, errores)
-|-- static/                            # CSS, JS, imagenes
-|-- tests/                             # Tests cross-app + conftest
-|-- docs/                              # Documentacion tecnica y UML (Fase 10)
-|-- plans/                             # Plan maestro
-|-- Pylint.md                          # Referencia teorica Pylint
-```
+`python manage.py seed_demo` (idempotente; se niega a correr con `DEBUG=False` salvo `--force`)
+crea estos usuarios, todos con la contrasena definida en `SEED_DEMO_PASSWORD`:
 
-## Pylint: que es y como se usa
+| Usuario | Rol |
+|---------|-----|
+| `admin` | Administrador (superusuario) |
+| `supervisor` | Supervisor |
+| `almacenista` | Almacenista |
+| `compras` | Compras |
+| `ventas` | Ventas |
+| `consulta` | Consulta (solo lectura) |
 
-### Que es Pylint
+Ademas carga 30 productos (4 con lote/caducidad FEFO), 2 almacenes, proveedores, clientes,
+3 OC (recibida, parcial, borrador), 3 OV (despachada, confirmada, borrador), 2 transferencias,
+1 ajuste, 1 conteo en progreso, productos bajo minimo y un lote por vencer (alertas activas).
+`--with-lint` ejecuta ademas una primera corrida de Pylint.
 
-Pylint es un analizador estatico de codigo Python que verifica:
+> Solo para desarrollo. En DEBUG el login muestra la lista de usuarios demo.
 
-- Errores de sintaxis y excepciones no manejadas.
-- Errores logicos (variables no definidas, import sin usar).
-- Convenciones de estilo (PEP 8, naming conventions).
-- Refactorizaciones sugeridas (code smells, duplicacion, complejidad).
-- Advertencias especificas de frameworks (via plugins como `pylint-django`).
+## 7. Pylint
 
-Pylint asigna una **nota de 0 a 10** que resume la calidad del codigo. Categorias:
+### Que es
 
-| Letra | Significado |
-|-------|-------------|
-| `C` | Convention (estilo) |
-| `R` | Refactor (code smell) |
-| `W` | Warning (posible bug) |
-| `E` | Error (probable bug) |
-| `F` | Fatal (error de sintaxis o import) |
-| `I` | Informational (sugerencia) |
+Pylint es un analizador estatico para Python: sin ejecutar el codigo detecta errores probables,
+malas practicas, violaciones de estilo (PEP 8) y *code smells*, y asigna una **nota de 0 a 10**.
+Resumen teorico completo en [`plans/Pylint.md`](plans/Pylint.md).
 
-En StockFlow la nota minima es **9.5** y la meta es **10.00/10**.
+| Letra | Categoria | Ejemplo |
+|:-----:|-----------|---------|
+| `C` | Convencion (estilo) | `C0103 invalid-name`, `C0114 missing-module-docstring` |
+| `R` | Refactor (code smell) | `R0913 too-many-arguments`, `R1731 consider-using-max-builtin` |
+| `W` | Warning (posible bug) | `W0611 unused-import`, `W0102 dangerous-default-value` |
+| `E` | Error (bug probable) | `E1101 no-member`, `E0602 undefined-variable` |
+| `F` | Fatal (no se pudo analizar) | `F0001`, errores de sintaxis |
+| `I` | Informativo | `I0011 locally-disabled` |
 
-### Comandos basicos
+La nota se calcula como `10 - ((5*E + W + R + C) / sentencias) * 10`. En StockFlow el minimo es
+**9.5** (`fail-under`) y la meta, cumplida, es **10.00/10**.
+
+### Comandos
 
 ```bash
-# Analisis rapido con la configuracion del proyecto
-make lint
-
-# Salida JSON para integracion con otras herramientas
-make lint-json
-
-# Corrida persistida en BD (visible en /calidad/ cuando este implementado)
-make lint-report
-
-# Generar un archivo .pylintrc por defecto (referencia)
-.venv/bin/python -m pylint --generate-rcfile
-
-# Desactivar un mensaje especifico en linea (comentado con motivo)
-.venv/bin/python -m pylint apps config tests --disable=W0611
+pylint apps config tests                                # analisis con .pylintrc
+pylint apps config --output-format=json2 > reports/pylint.json   # salida para herramientas
+pylint apps --fail-under=9.5                            # exit != 0 si la nota es menor
+pylint apps --disable=C0114,missing-function-docstring  # desactivar mensajes en una corrida
+pylint --generate-rcfile > referencia.pylintrc          # rcfile por defecto, como referencia
+pylint --help-msg=invalid-name                          # explicacion de un mensaje
+python manage.py run_pylint --fail-under 9.5            # corrida guardada en BD (visible en /calidad/)
+python manage.py generate_uml                           # pyreverse → docs/uml/*.mmd
 ```
 
-### Configuracion del proyecto
+Desactivar en linea solo con justificacion en la misma linea:
 
-StockFlow mantiene la configuracion en `.pylintrc`. Mensajes desactivados y motivo:
+```python
+except Exception as exc:  # pylint: disable=broad-exception-caught  # el runner puede fallar de muchas formas
+```
 
-| Mensaje | Motivo |
-|---------|--------|
-| `too-few-public-methods` | Clases `Meta` de Django, DTOs y Protocols tienen pocos metodos por diseno. |
-| `wildcard-import`, `unused-wildcard-import` | Patron canonico de Django para modulos `settings/*` (importan todo de `base` y sobreescriben). |
-| `too-many-ancestors` | `BaseListView` apila cinco mixins de Django por diseno; forzar a reducir la jerarquia anade complejidad sin valor. |
+### `.pylintrc` explicado
 
-Ademas, el archivo `apps/core/models.py:KardexRow` desactiva inline `too-many-instance-attributes`, `too-many-arguments` y `too-many-positional-arguments` con comentario explicito: agrupa los ocho campos contables del Kardex y agruparlos en otro DTO restaria claridad.
+| Clave | Valor | Por que |
+|-------|-------|---------|
+| `load-plugins` | `pylint_django` | Entiende modelos, managers y `objects` de Django (evita falsos `no-member`) |
+| `django-settings-module` | `config.settings.test` | Settings que usa el plugin para inspeccionar modelos |
+| `ignore` | `migrations` | Codigo generado por Django |
+| `ignore-paths` | `^apps/quality/snippets/.*$` | Snippets **intencionalmente malos** de la demo |
+| `jobs` | `0` | Usa todos los nucleos |
+| `py-version` | `3.14` | Version objetivo para las comprobaciones |
+| `fail-under` | `9.5` | Nota minima: por debajo, exit code ≠ 0 (CI y pre-commit fallan) |
+| `persistent` | `no` | No guarda estadisticas entre corridas |
+| `disable` | `too-few-public-methods`, `wildcard-import`, `unused-wildcard-import`, `too-many-ancestors`, `redefined-outer-name`, `unused-argument`, `duplicate-code` | Ruido justificado en el archivo: `Meta`/DTOs/Protocols, `from .base import *` de settings, mixins de Django, fixtures de pytest, campos repetidos por diseno |
+| `max-line-length` | `100` | Lineas legibles sin ser tan estrictos como 79 |
+| `max-args` / `max-positional-arguments` | `6` | Mas parametros sugiere un DTO |
+| `max-attributes` / `max-locals` / `max-returns` / `max-branches` | `10` / `15` / `6` / `12` | Limites de complejidad |
+| `good-names` | `i,j,k,pk,id,qs,_,urlpatterns,app_name,register` | Nombres cortos idiomaticos aceptados |
+| `output-format` / `reports` / `score` | `colorized` / `no` / `yes` | Salida legible con nota final |
 
-### Como se lee la nota
+### Como leer la salida
 
-- **10.00/10** Codigo limpio, sin advertencias.
-- **9.00 a 9.99** Calidad alta, solo advertencias de estilo o diseno discutibles.
-- **7.00 a 8.99** Aceptable para refactor; requiere tareas.
-- **< 7.00** Requiere intervencion antes de produccion.
-
-Para superar el umbral:
-
-1. Revise la salida: cada mensaje incluye `archivo:linea: columna: CODIGO: descripcion (simbolo)`.
-2. Corrija el codigo en lugar de desactivar el mensaje.
-3. Solo si la desactivacion es legitima, agreguela a `.pylintrc` o inline con comentario que justifique.
+```
+apps/x.py:12:0: C0103: Function name "Calcular" doesn't conform to snake_case naming style (invalid-name)
+└─ archivo:linea:columna: CODIGO: mensaje (simbolo)
+...
+Your code has been rated at 9.83/10
+```
 
 ### Modulo web `/calidad/`
 
-Disponible en la Fase 7. Permitira:
+- **Resumen**: nota de la ultima corrida, conteo por categoria y boton *Ejecutar Pylint ahora* (permiso `accounts.run_lint`).
+- **Corridas**: historial con nota y C/R/W/E/F; el detalle lista cada mensaje con enlace al catalogo.
+- **Analizar snippet**: pega codigo (no se ejecuta; limite de tamano y timeout) o carga una demo.
+- **Catalogo**: mensajes frecuentes con explicacion en espanol y ejemplo malo/bueno.
 
-- Ejecutar Pylint sobre el codigo del proyecto y guardar la corrida en BD.
-- Ver historial, comparar dos ejecuciones y ver la evolucion de la nota.
-- Analizar snippets didacticos que demuestran errores comunes.
-- Consultar un catalogo en espanol con explicacion y ejemplos bueno/malo por mensaje.
-- Mostrar la configuracion `.pylintrc` linea por linea.
+### Demo antes / despues
 
-## Tests y cobertura
+En `/calidad/analizar/` cargue **Calculos (mala calidad)** y luego **Calculos (calidad corregida)**:
 
-```bash
-# Suite completa
-make test
+| Snippet | Nota | Mensajes |
+|---------|-----:|----------|
+| `calculos_malo.py` | ~6.5 | `invalid-name`, `unused-import`, `unused-variable`, `dangerous-default-value`, `broad-exception-caught`, `missing-function-docstring`, `consider-using-max-builtin` |
+| `calculos_bueno.py` | 10.00 | — |
 
-# Suite sin tests marcados como slow
-make test-fast
+El test `@pytest.mark.slow` `test_real_pylint_on_demo_snippets` verifica esta demo con Pylint real.
 
-# Cobertura con reporte terminal + html
-make cov
-```
+### Pre-commit, CI y UML
 
-- Configuracion en `pyproject.toml` bajo `[tool.pytest.ini_options]` y `[tool.coverage.*]`.
-- Umbral de cobertura: **90 %** (`fail_under = 90`).
-- Tests usan **SQLite** en memoria (ver `config/settings/test.py`) para no tocar el PostgreSQL remoto.
-- `tests/conftest.py` expone fixtures compartidas (en expansion conforme se agreguen apps).
+- `pre-commit install` (lo hace `make setup`): `trailing-whitespace`, `end-of-file-fixer`, `check-yaml`,
+  `check-toml`, `check-added-large-files` y **pylint** sobre los archivos modificados (con el venv activo).
+- CI (`.github/workflows/ci.yml`): Postgres 16 propio → `check` → `makemigrations --check` →
+  `pylint apps config tests --fail-under=9.5` → `pytest --cov` (≥ 90 %) → artefactos `htmlcov/` y `reports/pylint.json`.
+- UML: `make uml` genera diagramas Mermaid (`.mmd`, visibles en GitHub/VS Code). Con Graphviz:
+  `python manage.py generate_uml --format png`.
 
-Estado actual:
-
-| Metrica | Valor |
-|---------|-------|
-| Tests | 17 pasando |
-| Cobertura | Pendiente (solo nucleo en Fase 1) |
-
-## Debug
-
-### VS Code
-
-Archivo `.vscode/launch.json` (se agrega en Fase 10). Configuraciones:
-
-- "Django: runserver" - inicia el servidor con `debugpy`.
-- "Pytest: archivo actual" / "Pytest: todo".
-- "Pylint: proyecto".
-
-### PyCharm
-
-En Fase 10 se incluyen configuraciones en `.idea/runConfigurations/`. Mientras tanto, use la configuracion "Django Server" estandar apuntando a `manage.py`.
-
-### Docker
-
-Use el perfil debug:
+## 8. Tests y cobertura
 
 ```bash
-docker compose --profile debug up
+make test              # pytest completo (incluye el test slow con Pylint real)
+make test-fast         # pytest -m "not slow"
+make cov               # cobertura en terminal + htmlcov/index.html
 ```
 
-Adjunte al puerto `5678` desde VS Code o PyCharm (`Run > Attach to Docker Container`).
+- Por defecto los tests usan **SQLite en memoria** (`config/settings/test.py`) para no tocar la BD remota.
+- Con `TEST_DATABASE_ENGINE=postgres` usan `DATABASE_URL` (asi corre la CI con `postgres:16`).
+- Cobertura minima configurada: **90 %** (`pyproject.toml`); actual ≈ 94 %.
+- Suites destacadas: `tests/test_flows.py` (flujos OC/OV/conteo por rol), `tests/test_api.py`,
+  `tests/test_navigation.py` (todas las paginas con los 6 roles, sin 500), `tests/test_seed_demo.py`,
+  `tests/test_migrations.py`.
 
-### django-debug-toolbar
+## 9. Debug
 
-Instalado en `config/settings/dev.py` para entornos de desarrollo. Aparece como un panel lateral en `/admin/` y otras vistas.
+**VS Code** (`.vscode/launch.json`): *Django: runserver*, *Pytest: archivo actual*, *Pytest: todo*,
+*Pylint: proyecto* y *Docker: attach (5678)* (mapea `${workspaceFolder}` ↔ `/app`).
 
-## API REST
+**PyCharm** (`.idea/runConfigurations/`): *Django runserver*, *Pytest*, *Pylint*. Para Docker use
+*Run → Attach to Process* / *Python Debug Server* contra `localhost:5678` con el mismo path mapping.
 
-Disponible en `/api/v1/` (Fase 1 expone solo `/api/schema/` y `/api/docs/`):
+**Docker**: `make docker-debug` y luego adjunte el depurador al puerto 5678 (el servidor arranca sin
+esperar al cliente). Breakpoints en el codigo montado se respetan porque se usa `--noreload`.
 
-- Autenticacion: Session y Token (`rest_framework.authtoken`).
-- Permisos: `IsAuthenticated` + `DjangoModelPermissions`.
-- Paginacion: 20 elementos por pagina.
-- Filtros: `django-filter`, `SearchFilter`, `OrderingFilter`.
-- Documentacion: OpenAPI 3 en `/api/schema/` y Swagger UI en `/api/docs/`.
+**django-debug-toolbar**: activa en `config.settings.dev` para `INTERNAL_IPS` (en Docker se agrega
+automaticamente el gateway). Los loggers `apps.*` emiten nivel DEBUG en desarrollo.
 
-## Arquitectura y patrones
+## 10. API REST
 
-| Capa | Patron | Archivo de referencia |
-|------|--------|-----------------------|
-| Configuracion | Split settings | `config/settings/{base,dev,prod,test}.py` |
-| Estado | State (maquina generica) | `apps/core/state.py` |
-| Errores | Domain errors | `apps/core/exceptions.py` |
-| Menu | Registry + Singleton | `apps/core/menu.py` |
-| Middleware | Contexto (ContextVar) | `apps/core/middleware.py` |
-| Vistas | Template Method (mixins) | `apps/core/views.py` |
-| DTO | Dataclass inmutable | `apps/core/models.py:KardexRow` |
+Base `/api/v1/` · Swagger `/api/docs/` · Esquema OpenAPI `/api/schema/`.
 
-Las apps de dominio (Fases 2+) usan adicionalmente:
+- Autenticacion: sesion o token (`POST /api/v1/auth/token/`).
+- Permisos: modelo (`view/add/change`) + permisos por accion; `DELETE` = desactivacion logica.
+- Paginacion 20; filtros `?campo=`, `?search=`, `?ordering=`.
+- Errores de negocio → **400** `{"detail": "...", "code": "InsufficientStockError"}`.
 
-- **Command** para movimientos de stock.
-- **Facade** en `InventoryService` que orquesta Commands.
-- **Observer** para senales de cambio.
-- **Strategy + Registry** para asignacion de stock (FIFO / FEFO).
-- **Adapter** para el runner de Pylint.
-- **Strategy + Factory** para exportadores CSV / XLSX / PDF.
+| Recurso | Acciones extra |
+|---------|----------------|
+| `categories`, `brands`, `uoms`, `products`, `warehouses`, `locations`, `suppliers`, `customers` | CRUD |
+| `lots`, `stock` | solo lectura |
+| `movements` | `POST receive/`, `issue/`, `transfer/`, `adjust/`; `GET kardex/?product=` |
+| `purchase-orders` | `POST {id}/lines/`, `{id}/confirm/`, `{id}/cancel/`, `{id}/receive/` |
+| `sales-orders` | `POST {id}/lines/`, `{id}/confirm/`, `{id}/cancel/`, `{id}/ship/`; `GET {id}/suggest-picking/` |
+| `cycle-counts` | `POST {id}/start/`, `{id}/record/`, `{id}/approve/`, `{id}/cancel/` |
+| `lint-runs` | `POST run/` |
+| `reports/kpis` | `GET` |
 
-## Como agregar una app nueva
+```bash
+TOKEN=$(curl -s -X POST localhost:8000/api/v1/auth/token/ \
+  -d username=almacenista -d password="$SEED_DEMO_PASSWORD" | python -c "import sys,json;print(json.load(sys.stdin)['token'])")
 
-1. Cree el paquete en `apps/<nombre>/` siguiendo el patron de la seccion "Estructura".
-3. Agregue `apps.<nombre>` a `INSTALLED_APPS` en `config/settings/base.py`.
-4. Incluya `path("", include("apps.<nombre>.urls"))` en `config/urls.py`.
-5. Registre items del menu en `apps.<nombre>.apps.<Nombre>Config.ready()` usando `MenuRegistry.register(...)`.
-6. Agregue el modelo a `apps.audit.registry.register(...)` para auditoria (cuando exista).
-7. Cree tests en `apps/<nombre>/tests/`.
-8. Ejecute `make check` antes de commitear.
+curl -H "Authorization: Token $TOKEN" "localhost:8000/api/v1/products/?search=demo"
 
-## Troubleshooting
+curl -H "Authorization: Token $TOKEN" -H "Content-Type: application/json" \
+  -X POST localhost:8000/api/v1/movements/receive/ \
+  -d '{"product": 2, "location": 2, "quantity": "5", "unit_cost": "3.50"}'
+
+# Picking sugerido y despacho de una OV confirmada
+curl -H "Authorization: Token $TOKEN" localhost:8000/api/v1/sales-orders/2/suggest-picking/
+```
+
+## 11. Arquitectura: capas, SOLID y patrones
+
+Capas: **vistas/ViewSets** (entrada/salida) → **services** (reglas de negocio, transacciones) →
+**modelos**; **selectors** para lecturas. El stock solo cambia via `InventoryService`.
+
+| Patron | Archivo |
+|--------|---------|
+| Command | `apps/inventory/services/commands.py` |
+| Facade | `apps/inventory/services/inventory_service.py` |
+| Strategy (+ Factory) | `apps/inventory/services/strategies.py` (FIFO/FEFO), `apps/reports/exporters.py` (CSV/XLSX/PDF) |
+| State | `apps/core/state.py` + transiciones en `purchasing/sales/inventory` services |
+| Observer | `apps/inventory/events.py` + `signals.py`, `apps/audit/signals.py` |
+| Registry | `apps/core/menu.py`, `apps/audit/registry.py` |
+| Adapter | `apps/quality/runner.py` |
+| Template Method | `apps/core/views.py` (`ServiceActionView`), `apps/inventory/views.py` (`_MovementCreateView`) |
+| DTO | `ReceiptLineInput`, `ShipLineInput`, `KardexRow`, `TabularData`, `LintResult` |
+| Inyeccion de dependencias | `PurchaseService(inventory=...)`, `LintService(runner=..., parser=...)` |
+
+SOLID aplicado y diagramas de estado: [`docs/arquitectura.md`](docs/arquitectura.md).
+
+## 12. Estructura de carpetas y como agregar una app
+
+```
+apps/
+  core/          infraestructura: modelos abstractos, secuencias, state machine, menu, vistas base, seed_demo
+  accounts/      usuarios, roles, setup_roles, assign_role, token API
+  catalog/ warehouses/ partners/   maestros
+  inventory/     commands, services, estrategias, conteos, alertas, kardex
+  purchasing/ sales/               ordenes de compra y venta
+  reports/ audit/ quality/         KPIs y exportes, bitacora, modulo Pylint
+  <app>/api/     serializers, viewsets y rutas de /api/v1/
+config/          settings (base, dev, prod, test), urls, api_urls
+templates/ static/                 UI (Bootstrap 5 + HTMX)
+tests/           pruebas transversales (flujos, API, navegacion, seed)
+docs/            arquitectura y UML
+scripts/         run.ps1, entrypoint.sh
+plans/           plan, progreso y teoria de Pylint
+```
+
+Checklist para una app nueva:
+
+1. `python manage.py startapp <nombre> apps/<nombre>` y `name = "apps.<nombre>"` en `apps.py`.
+2. Crear `models.py`, `services.py`, `selectors.py`, `views.py`, `urls.py`, `api/`, `tests/`.
+3. Agregar a `INSTALLED_APPS`, `config/urls.py` y `config/api_urls.py`.
+4. `python manage.py makemigrations <nombre>` (`tests/test_migrations.py` falla si se olvida).
+5. Registrar menu (`MenuRegistry`) y auditoria (`audit.registry.register`) en `ready()`.
+6. Agregar permisos al rol en `accounts/roles.py` y correr `python manage.py setup_roles`.
+7. `make check`.
+
+## 13. Troubleshooting
 
 | Sintoma | Causa | Solucion |
-|---------|------|----------|
-| `pylint` reporta `database "logistic" does not exist` | La BD remota no esta creada o el usuario no tiene `CREATEDB`. | Cree `logistic` con `CREATE DATABASE logistic;` desde un usuario con permiso, o use el `.env` con una BD propia. |
-| `pytest` falla con `permission denied to create database` | El usuario de BD no tiene `CREATEDB`. | StockFlow usa SQLite en memoria para tests, asi que este error solo aparece si cambio la configuracion. Revise `config/settings/test.py`. |
-| `pip install` falla en Python 3.14 por falta de wheels | Algunos no tienen wheel para 3.14 todavia. | Cree el venv con 3.13: `uv venv --python 3.13 .venv`. |
-| `pyreverse` no genera PNG | Falta Graphviz. | Instale con `brew install graphviz` / `apt install graphviz`. Use `-o puml` o `-o mmd` como alternativa. |
-| Puerto 8000 ocupado | Otro proceso usa el puerto. | `lsof -i :8000` para identificar y detenerlo, o use otro puerto: `python manage.py runserver 0.0.0.0:8001`. |
-| `pylint` excede el tiempo | El codigo es muy grande o hay ciclos. | Suba `PYLINT_TIMEOUT` en `.env`. |
-| `pre-commit` falla por pylint | El hook encontro nuevos mensajes. | Corrija el codigo. Si la regla debe estar desactivada, agreguela a `.pylintrc` con motivo. |
+|---------|-------|----------|
+| `permission denied to create database` al correr tests con Postgres | El usuario no tiene `CREATEDB` | Pida al DBA crear `test_logistic` con owner del usuario y ejecute `pytest --reuse-db`, o use SQLite (no defina `TEST_DATABASE_ENGINE`) |
+| `relation "..." does not exist` | Migraciones sin aplicar | `python manage.py migrate` |
+| `pip install` falla en Python 3.14 | Falta wheel de alguna dependencia | `uv venv --python 3.13 .venv` |
+| `generate_uml --format png` falla | Falta Graphviz | `brew install graphviz` / `apt install graphviz`, o use el formato por defecto `mmd` |
+| Puerto 8000 ocupado | Otro proceso | `lsof -i :8000` o `runserver 0.0.0.0:8001` |
+| Pylint excede el tiempo | Corrida grande | Suba `PYLINT_TIMEOUT` |
+| Snippet devuelve nota 0 / `django-settings-module-not-found` | Pylint sin `BASE_DIR` en `PYTHONPATH` | Ya resuelto en `SubprocessPylintRunner`; ejecute desde la raiz del repo |
+| Secret key u otra variable "cortada" dentro de Docker | Compose interpreta `$` en `.env` | Escape `$` como `$$` o regenere el valor sin `$` |
+| Login no persiste en `http://localhost` con settings prod | Cookies `Secure` sin HTTPS | `DJANGO_SECURE_COOKIES=0` y `DJANGO_SECURE_SSL_REDIRECT=0` (Compose ya lo hace) |
+| `seed_demo` se niega a correr | `DEBUG=False` | Use `--force` solo si realmente lo necesita |
+| `pre-commit` falla en pylint | Mensajes nuevos o venv no activo | Corrija el codigo o active `.venv` antes de commitear |
 
----
-
-## Licencia
-
-MIT - consulte el archivo [LICENSE](LICENSE) si esta disponible en su distribucion. En el repositorio academico la licencia es "Uso academico - UMG".
+> Seguridad: la contrasena de la BD del proyecto se compartio en texto plano; **rotela** tras la
+> entrega y use un usuario con privilegios minimos.
