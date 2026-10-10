@@ -170,6 +170,23 @@ def test_wac_updates_after_receive(setup, user) -> None:
 
 
 @pytest.mark.django_db
+def test_wac_considers_stock_in_other_locations(setup, user) -> None:
+    """El promedio usa la existencia total, no solo la de la ubicacion."""
+    svc = InventoryService()
+    svc.receive(
+        product=setup["product"], location=setup["location"],
+        quantity=Decimal("30"), unit_cost=Decimal("4"), user=user,
+    )
+    other = setup["warehouse"].locations.exclude(pk=setup["location"].pk).first()
+    svc.receive(
+        product=setup["product"], location=other,
+        quantity=Decimal("10"), unit_cost=Decimal("8"), user=user,
+    )
+    setup["product"].refresh_from_db()
+    assert setup["product"].cost_price == Decimal("5.0000")
+
+
+@pytest.mark.django_db
 def test_cycle_count_full_flow(setup, user) -> None:
     """El ciclo de conteo completo: crear, iniciar, contar, aprobar."""
     svc_cycle = CycleCountService()

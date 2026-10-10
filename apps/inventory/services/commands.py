@@ -13,6 +13,7 @@ from decimal import Decimal
 from typing import Any, Protocol
 
 from django.db import transaction
+from django.db.models import Sum
 
 from apps.core.exceptions import (
     BusinessRuleError,
@@ -73,15 +74,18 @@ class ReceiveStockCommand:
                 lot=lot,
                 defaults={"quantity": Decimal("0")},
             )
-            total_qty = stock.quantity + self.quantity
+            # Costo promedio ponderado sobre TODA la existencia del producto.
+            on_hand = Stock.objects.filter(
+                product=self.product, quantity__gt=0
+            ).aggregate(total=Sum("quantity"))["total"] or Decimal("0")
             wac = (
-                (stock.quantity * Decimal(str(self.product.cost_price))
+                (on_hand * Decimal(str(self.product.cost_price))
                  + self.quantity * self.unit_cost)
-                / total_qty
+                / (on_hand + self.quantity)
             )
             self.product.cost_price = wac.quantize(Decimal("0.0001"))
             self.product.save(update_fields=["cost_price"])
-            stock.quantity = total_qty
+            stock.quantity += self.quantity
             stock.save(update_fields=["quantity", "updated_at"])
             return StockMovement.objects.create(
                 movement_type="RECEIPT",
