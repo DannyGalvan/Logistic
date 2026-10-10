@@ -23,6 +23,13 @@ class Warehouse(UserStampedModel, ActivatableModel):
     code = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=120)
     address = models.CharField(max_length=200, blank=True)
+    manager = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
 
     class Meta:
         verbose_name = "Almacen"

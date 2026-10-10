@@ -20,12 +20,15 @@ persistent=no
 # del fixture definido a nivel de modulo).
 # unused-argument: los fixtures de pytest se reciben como parametros
 # aunque la funcion no los use directamente (delega en otro fixture).
+# duplicate-code: las apps Django repiten campos (``is_active``,
+# ``TimeStampedModel``, etc.) por diseno; no aporta valor detectarlos.
 disable=too-few-public-methods,
         wildcard-import,
         unused-wildcard-import,
         too-many-ancestors,
         redefined-outer-name,
-        unused-argument
+        unused-argument,
+        duplicate-code
 
 [FORMAT]
 max-line-length=100
