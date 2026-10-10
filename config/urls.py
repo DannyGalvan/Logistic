@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
@@ -12,9 +13,14 @@ urlpatterns = [
     path("almacenes/", include("apps.warehouses.urls")),
     path("socios/", include("apps.partners.urls")),
     path("inventario/", include("apps.inventory.urls")),
+    path("compras/", include("apps.purchasing.urls")),
+    path("ventas/", include("apps.sales.urls")),
     path("", include("apps.core.urls")),
     path("", include("config.api_urls")),
 ]
+
+if "debug_toolbar" in settings.INSTALLED_APPS:
+    urlpatterns = [path("__debug__/", include("debug_toolbar.urls")), *urlpatterns]
 
 handler403 = "apps.core.views.error_403"
 handler404 = "apps.core.views.error_404"
