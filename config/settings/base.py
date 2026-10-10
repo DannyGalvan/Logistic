@@ -166,6 +166,13 @@ PYLINT_SNIPPET_MAX_BYTES = env.int("PYLINT_SNIPPET_MAX_BYTES", default=20000)
 
 EXPIRY_ALERT_DAYS = env.int("EXPIRY_ALERT_DAYS", default=30)
 
+# Contrasena de los usuarios demo generados por ``seed_demo``.
+# Sobre escribir con ``SEED_DEMO_PASSWORD`` en .env para entornos reales.
+SEED_DEMO_PASSWORD = env(
+    "SEED_DEMO_PASSWORD",
+    default="Cambia-en-produccion-1234",
+)
+
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
