@@ -1,0 +1,35 @@
+{% comment %}
+  Partial: tabla generica con paginacion. Esperar contexto:
+    - headers: lista de strings
+    - rows: lista de filas (cada fila es dict con 'cells' y opcional 'actions')
+{% endcomment %}
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        {% for header in headers %}<th scope="col">{{ header }}</th>{% endfor %}
+        {% if show_actions %}<th class="text-end">Acciones</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          {% for cell in row.cells %}<td>{{ cell }}</td>{% endfor %}
+          {% if show_actions %}
+            <td class="text-end">
+              {% for action in row.actions %}{{ action|safe }}{% endfor %}
+            </td>
+          {% endif %}
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="{{ headers|length|add:show_actions|intformat:0 }}"
+              class="text-center text-secondary py-4">
+            {% include "partials/_empty.html" %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "partials/_pagination.html" %}

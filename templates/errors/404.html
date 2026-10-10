@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}404 No encontrado{% endblock %}
+{% block content %}
+<div class="text-center mt-5">
+  <h1 class="display-1 fw-light">404</h1>
+  <p class="lead">El recurso solicitado no existe.</p>
+  <a href="{% url 'core:dashboard' %}" class="btn btn-primary">Volver al inicio</a>
+</div>
+{% endblock %}

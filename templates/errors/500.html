@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}500 Error interno{% endblock %}
+{% block content %}
+<div class="text-center mt-5">
+  <h1 class="display-1 fw-light">500</h1>
+  <p class="lead">Error interno del servidor. Intente nuevamente.</p>
+  <a href="{% url 'core:dashboard' %}" class="btn btn-primary">Volver al inicio</a>
+</div>
+{% endblock %}

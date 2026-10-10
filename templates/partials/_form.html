@@ -1,0 +1,11 @@
+{% load crispy_forms_tags %}
+<form method="{{ form.method|default:'post' }}"
+      action="{{ form.action|default:'' }}"
+      {% if form.hx_post %}hx-post="{{ form.hx_post }}" hx-target="{{ form.hx_target|default:'#main' }}"{% endif %}>
+  {% csrf_token %}
+  {% crispy form %}
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="{{ form.cancel_url|default:'#' }}" class="btn btn-outline-secondary">Cancelar</a>
+    <button type="submit" class="btn btn-primary">{{ form.submit_label|default:'Guardar' }}</button>
+  </div>
+</form>
