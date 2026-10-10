@@ -1,0 +1,69 @@
+classDiagram
+  class BaseExporter {
+    content_type : str
+    extension : str
+    format_key : str
+    render(data: TabularData)* bytes
+    to_response(data: TabularData) HttpResponse
+  }
+  class ChartDataView {
+    permission_required : str
+    raise_exception : bool
+    get(request: HttpRequest) JsonResponse
+  }
+  class CsvExporter {
+    content_type : str
+    extension : str
+    format_key : str
+    render(data: TabularData) bytes
+  }
+  class DashboardView {
+    permission_required : str
+    template_name : str
+    get(request: HttpRequest) HttpResponse
+  }
+  class InventoryValuationView {
+    permission_required : str
+    get(request: HttpRequest) HttpResponse
+  }
+  class KpiView {
+    permission_classes : list
+    required_permissions : list
+    get(request)
+  }
+  class Meta {
+    default_permissions : tuple[str, ...]
+    managed : bool
+    permissions : tuple
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class PdfExporter {
+    content_type : str
+    extension : str
+    format_key : str
+    render(data: TabularData) bytes
+  }
+  class ReportPermission {
+  }
+  class ReportsConfig {
+    label : str
+    name : str
+    verbose_name : str
+    ready() None
+  }
+  class TabularData {
+    filename : str
+    headers : list[str]
+    rows : list[list[Any]]
+    title : str
+  }
+  class XlsxExporter {
+    content_type : str
+    extension : str
+    format_key : str
+    render(data: TabularData) bytes
+  }
+  CsvExporter --|> BaseExporter
+  PdfExporter --|> BaseExporter
+  XlsxExporter --|> BaseExporter

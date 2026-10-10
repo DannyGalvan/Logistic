@@ -1,0 +1,23 @@
+classDiagram
+  class audit {
+  }
+  class admin {
+  }
+  class apps {
+  }
+  class models {
+  }
+  class registry {
+  }
+  class services {
+  }
+  class signals {
+  }
+  class urls {
+  }
+  class views {
+  }
+  admin --> models
+  services --> models
+  signals --> registry
+  views --> models

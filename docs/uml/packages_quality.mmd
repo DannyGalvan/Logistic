@@ -1,0 +1,52 @@
+classDiagram
+  class quality {
+  }
+  class admin {
+  }
+  class api {
+  }
+  class serializers {
+  }
+  class urls {
+  }
+  class views {
+  }
+  class apps {
+  }
+  class catalog {
+  }
+  class data {
+  }
+  class demo_snippets {
+  }
+  class management {
+  }
+  class commands {
+  }
+  class generate_uml {
+  }
+  class run_pylint {
+  }
+  class models {
+  }
+  class parser {
+  }
+  class runner {
+  }
+  class services {
+  }
+  class urls {
+  }
+  class views {
+  }
+  admin --> models
+  catalog --> data
+  run_pylint --> services
+  parser --> runner
+  services --> catalog
+  services --> models
+  services --> parser
+  services --> runner
+  views --> catalog
+  views --> demo_snippets
+  views --> models

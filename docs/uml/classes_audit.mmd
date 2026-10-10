@@ -1,0 +1,39 @@
+classDiagram
+  class Action {
+    name
+  }
+  class AuditConfig {
+    label : str
+    name : str
+    verbose_name : str
+    ready() None
+  }
+  class AuditListView {
+    context_object_name : str
+    paginate_by : int
+    permission_required : str
+    queryset
+    template_name : str
+  }
+  class AuditLog {
+    action : CharField
+    changes : JSONField
+    content_type : ForeignKey
+    ip_address : GenericIPAddressField
+    object_id : CharField
+    object_repr : CharField
+    timestamp : DateTimeField
+    user : ForeignKey
+  }
+  class AuditLogAdmin {
+    list_display : tuple
+    list_filter : tuple
+    readonly_fields
+    search_fields : tuple
+    has_add_permission(request) bool
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }

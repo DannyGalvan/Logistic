@@ -1,0 +1,38 @@
+# StockFlow - no incluye servicio de BD: usa el Postgres remoto de DATABASE_URL (.env).
+#   docker compose up --build                  -> http://localhost:8000 (gunicorn, settings prod)
+#   docker compose --profile debug up --build  -> runserver + debugpy en 5678
+services:
+  web:
+    build:
+      context: .
+      target: prod
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-config.settings.prod}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      # Sin TLS en local: desactivar redireccion HTTPS y cookies "secure".
+      DJANGO_SECURE_SSL_REDIRECT: ${DJANGO_SECURE_SSL_REDIRECT:-0}
+      DJANGO_SECURE_COOKIES: ${DJANGO_SECURE_COOKIES:-0}
+      DJANGO_SECURE_HSTS_SECONDS: ${DJANGO_SECURE_HSTS_SECONDS:-0}
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  web-debug:
+    profiles: ["debug"]
+    build:
+      context: .
+      target: dev
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      DJANGO_DEBUG: "True"
+      DOCKER_DEBUG: "1"
+    command: >
+      python -m debugpy --listen 0.0.0.0:5678
+      manage.py runserver 0.0.0.0:8000 --noreload
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+      - "5678:5678"

@@ -1,0 +1,234 @@
+classDiagram
+  class GoodsReceipt {
+    code : CharField
+    location : ForeignKey
+    notes : TextField
+    order : ForeignKey
+    received_at : DateTimeField
+  }
+  class GoodsReceiptAdmin {
+    list_display : tuple
+    list_filter : tuple
+  }
+  class GoodsReceiptLine {
+    expires_at : DateField
+    lot_number : CharField
+    movement : OneToOneField
+    order_line : ForeignKey
+    quantity : DecimalField
+    receipt : ForeignKey
+  }
+  class GoodsReceiptLineAdmin {
+    list_display : tuple
+  }
+  class GoodsReceiptLineSerializer {
+  }
+  class GoodsReceiptSerializer {
+    lines
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    fields : list
+    model
+    widgets : dict
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class PurchaseAddLineSerializer {
+    product : PrimaryKeyRelatedField
+    quantity : DecimalField
+    unit_cost : DecimalField
+  }
+  class PurchaseOrder {
+    code : CharField
+    expected_date : DateField
+    is_editable : bool
+    notes : TextField
+    order_date : DateField
+    status : CharField
+    supplier : ForeignKey
+    total : Decimal
+    warehouse : ForeignKey
+    get_absolute_url() str
+  }
+  class PurchaseOrderAddLineView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class PurchaseOrderAdmin {
+    inlines : list
+    list_display : tuple
+    list_filter : tuple
+    search_fields : tuple
+  }
+  class PurchaseOrderCancelView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class PurchaseOrderConfirmView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class PurchaseOrderCreateView {
+    form_class
+    permission_required : str
+    template_name : str
+    form_valid(form)
+  }
+  class PurchaseOrderDetailView {
+    context_object_name : str
+    model
+    permission_required : str
+    raise_exception : bool
+    template_name : str
+    get_context_data()
+    get_queryset()
+  }
+  class PurchaseOrderForm {
+  }
+  class PurchaseOrderLine {
+    order : ForeignKey
+    pending_quantity : Decimal
+    product : ForeignKey
+    quantity : DecimalField
+    received_quantity : DecimalField
+    subtotal : Decimal
+    unit_cost : DecimalField
+  }
+  class PurchaseOrderLineForm {
+    product : ModelChoiceField
+    quantity : DecimalField
+    unit_cost : DecimalField
+  }
+  class PurchaseOrderLineInline {
+    extra : int
+    model
+  }
+  class PurchaseOrderLineSerializer {
+    pending_quantity : DecimalField
+  }
+  class PurchaseOrderListView {
+    context_object_name : str
+    paginate_by : int
+    permission_required : str
+    queryset
+    template_name : str
+  }
+  class PurchaseOrderReceiveView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class PurchaseOrderSerializer {
+    lines
+    total : DecimalField
+  }
+  class PurchaseOrderUpdateView {
+    form_class
+    model
+    permission_required : str
+    raise_exception : bool
+    template_name : str
+    get_queryset()
+    get_success_url() str
+  }
+  class PurchaseOrderViewSet {
+    action_permissions : dict
+    filterset_fields : list
+    queryset
+    search_fields : list
+    serializer_class
+    add_line(request, pk)
+    cancel(request, pk)
+    confirm(request, pk)
+    perform_create(serializer) None
+    receive(request, pk)
+  }
+  class PurchaseReceiveInputSerializer {
+    lines
+    location : PrimaryKeyRelatedField
+  }
+  class PurchaseService {
+    inventory : InventoryService
+    machine : StateMachine
+    add_line(order: PurchaseOrder) PurchaseOrderLine
+    cancel(order: PurchaseOrder) PurchaseOrder
+    confirm(order: PurchaseOrder) PurchaseOrder
+    create_order() PurchaseOrder
+    receive(order: PurchaseOrder) GoodsReceipt
+  }
+  class PurchasingConfig {
+    label : str
+    name : str
+    verbose_name : str
+    ready() None
+  }
+  class ReceiptLineInput {
+    expires_at : Optional[Any]
+    lot_number : str
+    order_line_id : int
+    quantity
+  }
+  class ReceiptLineInputSerializer {
+    expires_at : DateField
+    lot_number : CharField
+    order_line_id : IntegerField
+    quantity : DecimalField
+  }
+  class Status {
+    name
+  }
+  PurchaseOrderViewSet --> PurchaseOrderSerializer : serializer_class
+  GoodsReceiptLineSerializer --* GoodsReceiptSerializer : lines
+  PurchaseOrderLineSerializer --* PurchaseOrderSerializer : lines
+  ReceiptLineInputSerializer --* PurchaseReceiveInputSerializer : lines
+  PurchaseOrderForm --o PurchaseOrderCreateView : form_class
+  PurchaseOrderForm --o PurchaseOrderUpdateView : form_class
+  GoodsReceipt --o Meta : model
+  GoodsReceiptLine --o Meta : model
+  PurchaseOrder --o Meta : model
+  PurchaseOrder --o Meta : model
+  PurchaseOrder --o PurchaseOrderAddLineView : model
+  PurchaseOrder --o PurchaseOrderCancelView : model
+  PurchaseOrder --o PurchaseOrderConfirmView : model
+  PurchaseOrder --o PurchaseOrderDetailView : model
+  PurchaseOrder --o PurchaseOrderReceiveView : model
+  PurchaseOrder --o PurchaseOrderUpdateView : model
+  PurchaseOrderLine --o PurchaseOrderLineInline : model
+  PurchaseOrderLine --o Meta : model

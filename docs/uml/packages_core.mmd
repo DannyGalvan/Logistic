@@ -1,0 +1,54 @@
+classDiagram
+  class core {
+  }
+  class admin {
+  }
+  class api {
+  }
+  class exceptions {
+  }
+  class permissions {
+  }
+  class viewsets {
+  }
+  class apps {
+  }
+  class context_processors {
+  }
+  class exceptions {
+  }
+  class management {
+  }
+  class commands {
+  }
+  class seed_demo {
+  }
+  class managers {
+  }
+  class menu {
+  }
+  class middleware {
+  }
+  class models {
+  }
+  class selectors {
+  }
+  class state {
+  }
+  class templatetags {
+  }
+  class ui {
+  }
+  class urls {
+  }
+  class views {
+  }
+  admin --> models
+  exceptions --> exceptions
+  viewsets --> permissions
+  context_processors --> menu
+  context_processors --> selectors
+  models --> managers
+  state --> exceptions
+  views --> exceptions
+  views --> selectors

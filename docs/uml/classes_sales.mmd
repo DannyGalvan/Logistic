@@ -1,0 +1,236 @@
+classDiagram
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    fields : list
+    model
+    widgets : dict
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class PickingSuggestionSerializer {
+    location_id : IntegerField
+    lot_id : IntegerField
+    order_line_id : IntegerField
+    quantity : DecimalField
+  }
+  class SalesAddLineSerializer {
+    product : PrimaryKeyRelatedField
+    quantity : DecimalField
+    unit_price : DecimalField
+  }
+  class SalesConfig {
+    label : str
+    name : str
+    verbose_name : str
+    ready() None
+  }
+  class SalesOrder {
+    code : CharField
+    customer : ForeignKey
+    is_editable : bool
+    notes : TextField
+    order_date : DateField
+    status : CharField
+    total : Decimal
+    warehouse : ForeignKey
+    get_absolute_url() str
+  }
+  class SalesOrderAddLineView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class SalesOrderAdmin {
+    inlines : list
+    list_display : tuple
+    list_filter : tuple
+    search_fields : tuple
+  }
+  class SalesOrderCancelView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class SalesOrderConfirmView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class SalesOrderCreateView {
+    form_class
+    permission_required : str
+    template_name : str
+    form_valid(form)
+  }
+  class SalesOrderDetailView {
+    context_object_name : str
+    model
+    permission_required : str
+    raise_exception : bool
+    template_name : str
+    get_context_data()
+    get_queryset()
+  }
+  class SalesOrderForm {
+  }
+  class SalesOrderLine {
+    order : ForeignKey
+    pending_quantity : Decimal
+    product : ForeignKey
+    quantity : DecimalField
+    shipped_quantity : DecimalField
+    subtotal : Decimal
+    unit_price : DecimalField
+  }
+  class SalesOrderLineForm {
+    product : ModelChoiceField
+    quantity : DecimalField
+    unit_price : DecimalField
+  }
+  class SalesOrderLineInline {
+    extra : int
+    model
+  }
+  class SalesOrderLineSerializer {
+    pending_quantity : DecimalField
+  }
+  class SalesOrderListView {
+    context_object_name : str
+    paginate_by : int
+    permission_required : str
+    queryset
+    template_name : str
+  }
+  class SalesOrderSerializer {
+    lines
+    total : DecimalField
+  }
+  class SalesOrderShipView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class SalesOrderUpdateView {
+    form_class
+    model
+    permission_required : str
+    raise_exception : bool
+    template_name : str
+    get_queryset()
+    get_success_url() str
+  }
+  class SalesOrderViewSet {
+    action_permissions : dict
+    filterset_fields : list
+    queryset
+    search_fields : list
+    serializer_class
+    add_line(request, pk)
+    cancel(request, pk)
+    confirm(request, pk)
+    perform_create(serializer) None
+    ship(request, pk)
+    suggest_picking(request, pk)
+  }
+  class SalesService {
+    inventory : InventoryService
+    machine : StateMachine
+    add_line(order: SalesOrder) SalesOrderLine
+    cancel(order: SalesOrder) SalesOrder
+    confirm(order: SalesOrder) SalesOrder
+    create_order() SalesOrder
+    ship(order: SalesOrder) Shipment
+    suggest_picking(order: SalesOrder) list[dict[str, Any]]
+  }
+  class ShipInputSerializer {
+    carrier : CharField
+    lines
+    tracking_number : CharField
+  }
+  class ShipLineInput {
+    location_id : int
+    lot_id : int | None
+    order_line_id : int
+    quantity
+  }
+  class Shipment {
+    carrier : CharField
+    code : CharField
+    notes : TextField
+    order : ForeignKey
+    shipped_at : DateTimeField
+    tracking_number : CharField
+  }
+  class ShipmentAdmin {
+    list_display : tuple
+  }
+  class ShipmentLine {
+    location : ForeignKey
+    lot : ForeignKey
+    movement : OneToOneField
+    order_line : ForeignKey
+    quantity : DecimalField
+    shipment : ForeignKey
+  }
+  class ShipmentLineAdmin {
+    list_display : tuple
+  }
+  class ShipmentLineSerializer {
+  }
+  class ShipmentSerializer {
+    lines
+  }
+  class Status {
+    name
+  }
+  SalesOrderViewSet --> SalesOrderSerializer : serializer_class
+  PickingSuggestionSerializer --* ShipInputSerializer : lines
+  SalesOrderLineSerializer --* SalesOrderSerializer : lines
+  ShipmentLineSerializer --* ShipmentSerializer : lines
+  SalesOrderForm --o SalesOrderCreateView : form_class
+  SalesOrderForm --o SalesOrderUpdateView : form_class
+  SalesOrder --o Meta : model
+  SalesOrder --o Meta : model
+  SalesOrder --o SalesOrderAddLineView : model
+  SalesOrder --o SalesOrderCancelView : model
+  SalesOrder --o SalesOrderConfirmView : model
+  SalesOrder --o SalesOrderDetailView : model
+  SalesOrder --o SalesOrderShipView : model
+  SalesOrder --o SalesOrderUpdateView : model
+  SalesOrderLine --o SalesOrderLineInline : model
+  SalesOrderLine --o Meta : model
+  Shipment --o Meta : model
+  ShipmentLine --o Meta : model

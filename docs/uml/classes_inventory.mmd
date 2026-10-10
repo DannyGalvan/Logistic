@@ -1,0 +1,526 @@
+classDiagram
+  class AdjustForm {
+    counted_quantity : DecimalField
+    quantity : NoneType
+  }
+  class AdjustInputSerializer {
+    counted_quantity : DecimalField
+    location : PrimaryKeyRelatedField
+    lot : PrimaryKeyRelatedField
+    note : CharField
+    product : PrimaryKeyRelatedField
+  }
+  class AdjustStockCommand {
+    counted_quantity
+    location : Any
+    lot : Optional[Any]
+    note : str
+    product : Any
+    reason : str
+    user : Any
+    execute() StockMovement | None
+  }
+  class AdjustView {
+    form_class
+    method_name : str
+    permission_required : str
+    success_url : \_\_proxy\_\_
+    template_name : str
+    get_service_kwargs(data: dict) dict
+  }
+  class Alert {
+    alert_type : CharField
+    is_read : BooleanField
+    lot : ForeignKey
+    message : CharField
+    product : ForeignKey
+    resolved_at : DateTimeField
+  }
+  class AlertAdmin {
+    list_display : tuple
+    list_filter : tuple
+  }
+  class AlertListView {
+    context_object_name : str
+    paginate_by : int
+    permission_required : str
+    queryset
+    template_name : str
+  }
+  class AlertService {
+    evaluate_expirations(days: int | None) None
+    evaluate_product(product: Any) None
+  }
+  class AlertType {
+    name
+  }
+  class Allocation {
+    location_id : int
+    lot_id : int | None
+    quantity
+    stock_id : int
+  }
+  class AllocationStrategy {
+    allocate(product: Any, warehouse: Any, quantity: Decimal)* list[Allocation]
+  }
+  class CycleCount {
+    approved_at : DateTimeField
+    approved_by : ForeignKey
+    code : CharField
+    location : ForeignKey
+    notes : TextField
+    status : CharField
+    warehouse : ForeignKey
+    get_absolute_url() str
+  }
+  class CycleCountAdmin {
+    list_display : tuple
+    list_filter : tuple
+  }
+  class CycleCountApproveView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class CycleCountCancelView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class CycleCountCreateView {
+    form_class
+    permission_required : str
+    raise_exception : bool
+    success_url : \_\_proxy\_\_
+    template_name : str
+    form_valid(form)
+  }
+  class CycleCountDetailView {
+    context_object_name : str
+    model
+    permission_required : str
+    raise_exception : bool
+    template_name : str
+    get_context_data()
+  }
+  class CycleCountForm {
+  }
+  class CycleCountLine {
+    counted_quantity : DecimalField
+    cycle_count : ForeignKey
+    difference : Decimal | None
+    expected_quantity : DecimalField
+    location : ForeignKey
+    lot : ForeignKey
+    product : ForeignKey
+  }
+  class CycleCountLineAdmin {
+    list_display : tuple
+  }
+  class CycleCountLineSerializer {
+    difference : DecimalField
+  }
+  class CycleCountListView {
+    context_object_name : str
+    paginate_by : int
+    permission_required : str
+    queryset
+    template_name : str
+  }
+  class CycleCountRecordLineSerializer {
+    counted_quantity : DecimalField
+    id : IntegerField
+  }
+  class CycleCountRecordSerializer {
+    lines
+  }
+  class CycleCountRecordView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class CycleCountSerializer {
+    lines
+  }
+  class CycleCountService {
+    inventory
+    machine : StateMachine
+    approve(cycle: CycleCount, user: Any) CycleCount
+    cancel(cycle: CycleCount) CycleCount
+    create() CycleCount
+    record(line: CycleCountLine, counted_quantity: Decimal) CycleCountLine
+    start(cycle: CycleCount) CycleCount
+  }
+  class CycleCountStartView {
+    model
+    permission_required : str
+    success_message : str
+    perform(obj, request) None
+  }
+  class CycleCountViewSet {
+    action_permissions : dict
+    filterset_fields : list
+    queryset
+    serializer_class
+    approve(request, pk)
+    cancel(request, pk)
+    perform_create(serializer) None
+    record(request, pk)
+    start(request, pk)
+  }
+  class FEFOStrategy {
+    allocate(product: Any, warehouse: Any, quantity: Decimal) list[Allocation]
+  }
+  class FIFOStrategy {
+    allocate(product: Any, warehouse: Any, quantity: Decimal) list[Allocation]
+  }
+  class InventoryConfig {
+    label : str
+    name : str
+    verbose_name : str
+    ready() None
+  }
+  class InventoryService {
+    adjust()
+    allocate() list[Allocation]
+    issue()
+    receive()
+    transfer()
+  }
+  class IssueForm {
+  }
+  class IssueInputSerializer {
+    location : PrimaryKeyRelatedField
+    lot : PrimaryKeyRelatedField
+  }
+  class IssueStockCommand {
+    location : Any
+    lot : Optional[Any]
+    product : Any
+    quantity
+    reason : str
+    reference : str
+    user : Any
+    execute() StockMovement
+  }
+  class IssueView {
+    form_class
+    method_name : str
+    permission_required : str
+    success_url : \_\_proxy\_\_
+    template_name : str
+  }
+  class KardexQuerySerializer {
+    date_from : DateField
+    date_to : DateField
+    product : PrimaryKeyRelatedField
+    warehouse : PrimaryKeyRelatedField
+  }
+  class KardexRowSerializer {
+    balance : DecimalField
+    balance_value : DecimalField
+    date : DateTimeField
+    entry_qty : DecimalField
+    exit_qty : DecimalField
+    movement_type : CharField
+    reference : CharField
+    unit_cost : DecimalField
+  }
+  class KardexView {
+    context_object_name : str
+    permission_required : str
+    product : Product | None
+    raise_exception : bool
+    template_name : str
+    warehouse : Warehouse | None
+    get_context_data()
+    get_queryset()
+  }
+  class Lot {
+    days_to_expire : int | None
+    expires_at : DateField
+    is_expired : bool
+    lot_number : CharField
+    manufactured_at : DateField
+    product : ForeignKey
+  }
+  class LotAdmin {
+    list_display : tuple
+    list_filter : tuple
+    search_fields : tuple
+  }
+  class LotListView {
+    context_object_name : str
+    paginate_by : int
+    permission_required : str
+    queryset
+    template_name : str
+  }
+  class LotSerializer {
+  }
+  class LotViewSet {
+    filterset_fields : list
+    queryset
+    search_fields : list
+    serializer_class
+  }
+  class Meta {
+    constraints : list
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    constraints : list
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class MovementListView {
+    context_object_name : str
+    paginate_by : int
+    permission_required : str
+    queryset
+    template_name : str
+  }
+  class MovementType {
+    name
+  }
+  class Reason {
+    name
+  }
+  class ReceiveForm {
+    expires_at : DateField
+    lot_number : CharField
+    manufactured_at : DateField
+    unit_cost : DecimalField
+    warehouse : ModelChoiceField
+    clean_quantity() Decimal
+  }
+  class ReceiveInputSerializer {
+    expires_at : DateField
+    location : PrimaryKeyRelatedField
+    lot_number : CharField
+    unit_cost : DecimalField
+  }
+  class ReceiveStockCommand {
+    expires_at : Optional[Any]
+    location : Any
+    lot_number : str | None
+    manufactured_at : Optional[Any]
+    product : Any
+    quantity
+    reason : str
+    reference : str
+    unit_cost
+    user : Any
+    execute() StockMovement
+  }
+  class ReceiveView {
+    form_class
+    method_name : str
+    permission_required : str
+    success_url : \_\_proxy\_\_
+    template_name : str
+    get_service_kwargs(data: dict) dict
+  }
+  class Status {
+    name
+  }
+  class Stock {
+    location : ForeignKey
+    lot : ForeignKey
+    product : ForeignKey
+    quantity : DecimalField
+    updated_at : DateTimeField
+  }
+  class StockAdmin {
+    list_display : tuple
+    list_filter : tuple
+    search_fields : tuple
+  }
+  class StockCommand {
+    execute()* StockMovement | None
+  }
+  class StockListView {
+    context_object_name : str
+    paginate_by : int
+    permission_required : str
+    template_name : str
+    get_queryset()
+  }
+  class StockMovement {
+    created_by : ForeignKey
+    from_location : ForeignKey
+    lot : ForeignKey
+    movement_type : CharField
+    note : CharField
+    product : ForeignKey
+    quantity : DecimalField
+    reason : CharField
+    reference : CharField
+    to_location : ForeignKey
+    unit_cost : DecimalField
+    clean() None
+    save()
+  }
+  class StockMovementAdmin {
+    list_display : tuple
+    list_filter : tuple
+    readonly_fields
+    has_add_permission(request) bool
+  }
+  class StockMovementSerializer {
+  }
+  class StockMovementViewSet {
+    action_permissions : dict
+    filterset_fields : list
+    queryset
+    search_fields : list
+    serializer_class
+    adjust(request)
+    issue(request)
+    kardex(request)
+    receive(request)
+    transfer(request)
+  }
+  class StockSerializer {
+  }
+  class StockViewSet {
+    filterset_fields : list
+    queryset
+    serializer_class
+  }
+  class TransferForm {
+    to_location : ModelChoiceField
+    clean()
+  }
+  class TransferInputSerializer {
+    from_location : PrimaryKeyRelatedField
+    lot : PrimaryKeyRelatedField
+    to_location : PrimaryKeyRelatedField
+  }
+  class TransferStockCommand {
+    from_location : Any
+    lot : Optional[Any]
+    product : Any
+    quantity
+    reference : str
+    to_location : Any
+    user : Any
+    execute() StockMovement
+  }
+  class TransferView {
+    form_class
+    method_name : str
+    permission_required : str
+    success_url : \_\_proxy\_\_
+    template_name : str
+    get_service_kwargs(data: dict) dict
+  }
+  class _BaseMovementForm {
+    location : ModelChoiceField
+    product : ModelChoiceField
+    quantity : DecimalField
+    reference : CharField
+  }
+  class _LotMixin {
+    lot : ModelChoiceField
+  }
+  class _MovementCreateView {
+    method_name : str
+    raise_exception : bool
+    form_valid(form)
+    get_service()
+    get_service_kwargs(data: dict) dict
+  }
+  class _MovementInput {
+    product : PrimaryKeyRelatedField
+    quantity : DecimalField
+    reference : CharField
+  }
+  IssueInputSerializer --|> _MovementInput
+  ReceiveInputSerializer --|> _MovementInput
+  TransferInputSerializer --|> _MovementInput
+  AdjustForm --|> _BaseMovementForm
+  AdjustForm --|> _LotMixin
+  IssueForm --|> _BaseMovementForm
+  IssueForm --|> _LotMixin
+  ReceiveForm --|> _BaseMovementForm
+  TransferForm --|> _BaseMovementForm
+  TransferForm --|> _LotMixin
+  AdjustView --|> _MovementCreateView
+  IssueView --|> _MovementCreateView
+  ReceiveView --|> _MovementCreateView
+  TransferView --|> _MovementCreateView
+  CycleCountViewSet --> CycleCountSerializer : serializer_class
+  LotViewSet --> LotSerializer : serializer_class
+  StockMovementViewSet --> StockMovementSerializer : serializer_class
+  StockViewSet --> StockSerializer : serializer_class
+  CycleCountService --> InventoryService : inventory
+  CycleCountLineSerializer --* CycleCountSerializer : lines
+  CycleCountRecordLineSerializer --* CycleCountRecordSerializer : lines
+  AdjustForm --o AdjustView : form_class
+  CycleCountForm --o CycleCountCreateView : form_class
+  IssueForm --o IssueView : form_class
+  ReceiveForm --o ReceiveView : form_class
+  TransferForm --o TransferView : form_class
+  CycleCount --o Meta : model
+  CycleCount --o Meta : model
+  CycleCount --o CycleCountApproveView : model
+  CycleCount --o CycleCountCancelView : model
+  CycleCount --o CycleCountDetailView : model
+  CycleCount --o CycleCountRecordView : model
+  CycleCount --o CycleCountStartView : model
+  CycleCountLine --o Meta : model
+  Lot --o Meta : model
+  Stock --o Meta : model
+  StockMovement --o Meta : model

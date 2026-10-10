@@ -1,0 +1,131 @@
+classDiagram
+  class Location {
+    code : CharField
+    location_type : CharField
+    name : CharField
+    warehouse : ForeignKey
+  }
+  class LocationAdmin {
+    list_display : tuple
+    list_filter : tuple
+    search_fields : tuple
+  }
+  class LocationCreateView {
+    form_class
+    model
+    template_name : str
+    warehouse : Warehouse | None
+    dispatch(request)
+    form_valid(form)
+    get_context_data()
+  }
+  class LocationForm {
+  }
+  class LocationSerializer {
+  }
+  class LocationType {
+    name
+  }
+  class LocationViewSet {
+    create_service
+    filterset_fields : list
+    queryset
+    search_fields : list
+    serializer_class
+    service_accepts_user : bool
+    update_service
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    constraints : list
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Warehouse {
+    address : CharField
+    code : CharField
+    manager : ForeignKey
+    name : CharField
+  }
+  class WarehouseAdmin {
+    list_display : tuple
+    list_filter : tuple
+    search_fields : tuple
+  }
+  class WarehouseCreateView {
+    form_class
+    model
+    object
+    success_url : \_\_proxy\_\_
+    template_name : str
+    form_valid(form)
+  }
+  class WarehouseForm {
+  }
+  class WarehouseListView {
+    context_object_name : str
+    model
+    paginate_by : int
+    template_name : str
+    get_queryset()
+  }
+  class WarehouseSerializer {
+    locations
+  }
+  class WarehouseUpdateView {
+    form_class
+    model
+    success_url : \_\_proxy\_\_
+    template_name : str
+  }
+  class WarehouseViewSet {
+    create_service
+    filterset_fields : list
+    queryset
+    search_fields : list
+    serializer_class
+    update_service
+  }
+  class WarehousesConfig {
+    label : str
+    name : str
+    verbose_name : str
+    ready() None
+  }
+  LocationViewSet --> LocationSerializer : serializer_class
+  WarehouseViewSet --> WarehouseSerializer : serializer_class
+  LocationSerializer --* WarehouseSerializer : locations
+  LocationForm --o LocationCreateView : form_class
+  WarehouseForm --o WarehouseCreateView : form_class
+  WarehouseForm --o WarehouseUpdateView : form_class
+  Location --o Meta : model
+  Location --o Meta : model
+  Location --o LocationCreateView : model
+  Warehouse --o Meta : model
+  Warehouse --o Meta : model
+  Warehouse --o WarehouseCreateView : model
+  Warehouse --o WarehouseListView : model
+  Warehouse --o WarehouseUpdateView : model

@@ -1,0 +1,59 @@
+classDiagram
+  class inventory {
+  }
+  class admin {
+  }
+  class api {
+  }
+  class serializers {
+  }
+  class urls {
+  }
+  class views {
+  }
+  class apps {
+  }
+  class events {
+  }
+  class forms {
+  }
+  class models {
+  }
+  class selectors {
+  }
+  class services {
+  }
+  class alert_service {
+  }
+  class commands {
+  }
+  class cycle_count_service {
+  }
+  class inventory_service {
+  }
+  class strategies {
+  }
+  class signals {
+  }
+  class urls {
+  }
+  class views {
+  }
+  admin --> models
+  forms --> models
+  selectors --> models
+  services --> alert_service
+  services --> cycle_count_service
+  services --> inventory_service
+  services --> strategies
+  alert_service --> models
+  commands --> models
+  cycle_count_service --> models
+  cycle_count_service --> inventory_service
+  inventory_service --> commands
+  inventory_service --> strategies
+  strategies --> models
+  signals --> events
+  signals --> services
+  views --> forms
+  views --> models

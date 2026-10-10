@@ -1,0 +1,154 @@
+classDiagram
+  class ActivatableModel {
+    active
+    is_active : BooleanField
+    objects : Manager
+  }
+  class ActiveManager {
+    get_queryset() models.QuerySet
+  }
+  class BaseDashboardView {
+    template_name : str
+    get(request: HttpRequest) HttpResponse
+  }
+  class BaseListView {
+    paginate_by : int
+    raise_exception : bool
+    get_base_queryset() Any
+    get_context_data() dict[str, Any]
+    get_queryset() Any
+  }
+  class BaseReadOnlyViewSet {
+    action_permissions : dict[str, list[str]]
+    permission_classes : list
+  }
+  class BusinessRuleError {
+  }
+  class Command {
+    help : str
+    add_arguments(parser)
+    handle()
+  }
+  class CoreConfig {
+    label : str
+    name : str
+    verbose_name : str
+    ready()* None
+  }
+  class CurrentUserMiddleware {
+    get_response
+  }
+  class DocumentSequence {
+    id : UUIDField
+    last_number : PositiveIntegerField
+    prefix : CharField
+  }
+  class DocumentSequenceAdmin {
+    list_display : tuple
+    readonly_fields : tuple
+    has_add_permission(request) bool
+  }
+  class DomainError {
+    message : str
+  }
+  class HtmxTemplateMixin {
+    partial_template_name : str | None
+    get_template_names() list[str]
+  }
+  class InsufficientStockError {
+  }
+  class InvalidQuantityError {
+  }
+  class InvalidStateTransitionError {
+  }
+  class KardexRow {
+    balance
+    balance_value
+    date : Any
+    entry_qty
+    exit_qty
+    movement_type : str
+    reference : str
+    unit_cost
+  }
+  class LotRequiredError {
+  }
+  class MenuGroup {
+    items : list[MenuItem]
+    section : str
+  }
+  class MenuItem {
+    icon : str
+    label : str
+    order : int
+    permission : str | None
+    section : str
+    url_name : str
+  }
+  class MenuRegistry {
+    items_for(user) list[MenuItem]
+    register(item: MenuItem) None
+    register_many(items: Iterable[MenuItem]) None
+    reset() None
+  }
+  class Meta {
+    abstract : bool
+  }
+  class Meta {
+    abstract : bool
+  }
+  class Meta {
+    abstract : bool
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class ModelPermissions {
+    perms_map : dict
+    has_permission(request, view) bool
+  }
+  class RequiredPermissions {
+    has_permission(request, view) bool
+  }
+  class ServiceActionView {
+    http_method_names : list
+    model : Optional[Any]
+    raise_exception : bool
+    success_message : str
+    get_redirect_url(obj: Any) str
+    perform(obj: Any, request: HttpRequest) None
+    post(request: HttpRequest, pk: int) HttpResponse
+  }
+  class ServiceModelViewSet {
+    create_service : Callable[..., Any]
+    service_accepts_user : bool
+    update_service : Callable[..., Any]
+    perform_create(serializer) None
+    perform_destroy(instance) None
+    perform_update(serializer) None
+  }
+  class StateMachine {
+    allow(origin: str, targets: Iterable[str]) None
+    allowed_targets(current: str) frozenset[str]
+    assert_can_transition(current: str, target: str) None
+    can_transition(current: str, target: str) bool
+  }
+  class TimeStampedModel {
+    created_at : DateTimeField
+    updated_at : DateTimeField
+  }
+  class UserStampedModel {
+    created_by : ForeignKey
+    updated_by : ForeignKey
+  }
+  ServiceModelViewSet --|> BaseReadOnlyViewSet
+  BusinessRuleError --|> DomainError
+  InsufficientStockError --|> DomainError
+  InvalidQuantityError --|> DomainError
+  InvalidStateTransitionError --|> DomainError
+  LotRequiredError --|> DomainError
+  UserStampedModel --|> TimeStampedModel
+  BaseListView --|> HtmxTemplateMixin
+  ActiveManager --* ActivatableModel : active

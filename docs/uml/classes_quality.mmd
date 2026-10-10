@@ -1,0 +1,204 @@
+classDiagram
+  class CatalogView {
+    permission_required : str
+    template_name : str
+    get_context_data()
+  }
+  class Command {
+    help : str
+    add_arguments(parser)
+    handle()
+  }
+  class Command {
+    help : str
+    add_arguments(parser)
+    handle()
+  }
+  class Json2Parser {
+    parse(output: RawLintOutput) LintResult
+  }
+  class LintExecutionError {
+  }
+  class LintMessage {
+    category : str
+    column : int
+    line : int
+    message : str
+    message_id : str
+    module : str
+    obj : str
+    path : str
+    symbol : str
+    type : str
+  }
+  class LintMessageInline {
+    extra : int
+    fields : tuple
+    model
+  }
+  class LintMessageRecord {
+    column : PositiveIntegerField
+    line : PositiveIntegerField
+    message_id : CharField
+    message_text : TextField
+    module : CharField
+    obj : CharField
+    path : CharField
+    run : ForeignKey
+    symbol : CharField
+    type : CharField
+  }
+  class LintMessageRecordAdmin {
+    list_display : tuple
+  }
+  class LintMessageSerializer {
+  }
+  class LintResult {
+    counts : dict[str, int]
+    duration_ms : int
+    exit_code : int
+    messages : tuple[LintMessage, ...]
+    raw_output : str
+    score : float | None
+  }
+  class LintRun {
+    convention_count : PositiveIntegerField
+    created_at : DateTimeField
+    duration_ms : PositiveIntegerField
+    error_count : PositiveIntegerField
+    error_detail : TextField
+    fatal_count : PositiveIntegerField
+    info_count : PositiveIntegerField
+    modules_linted : PositiveIntegerField
+    refactor_count : PositiveIntegerField
+    score : DecimalField
+    source : CharField
+    status : CharField
+    target : CharField
+    triggered_by : ForeignKey
+    warning_count : PositiveIntegerField
+  }
+  class LintRunAdmin {
+    inlines : list
+    list_display : tuple
+    list_filter : tuple
+  }
+  class LintRunDetailSerializer {
+    messages
+  }
+  class LintRunDetailView {
+    permission_required : str
+    get(request, pk: int) HttpResponse
+  }
+  class LintRunListView {
+    context_object_name : str
+    paginate_by : int
+    permission_required : str
+    queryset
+    template_name : str
+  }
+  class LintRunSerializer {
+  }
+  class LintRunViewSet {
+    action_permissions : dict
+    filterset_fields : list
+    queryset
+    serializer_class
+    get_serializer_class()
+    run(request)
+  }
+  class LintRunner {
+    run(targets: list[str])* RawLintOutput
+  }
+  class LintService {
+    catalog
+    parser
+    runner
+    analyze_snippet(code: str, filename: str, user: Any) tuple[LintResult, str | None]
+    compare(run_a: LintRun, run_b: LintRun) RunComparison
+    run_project(targets: list[str] | None, user: Any, source: str) LintRun
+  }
+  class MessageCatalog {
+    entries : list[dict]
+    by_category(letter: str) list[dict]
+    lookup(code_or_symbol: str) dict | None
+    search(term: str) list[dict]
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    indexes : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+  }
+  class QualityConfig {
+    label : str
+    name : str
+    verbose_name : str
+    ready() None
+  }
+  class QualityDashboardView {
+    permission_required : str
+    template_name : str
+    get_context_data()
+    post(request)
+  }
+  class RawLintOutput {
+    duration_ms : int
+    exit_code : int
+    stderr : str
+    stdout : str
+  }
+  class RunComparison {
+    count_deltas : dict[str, int]
+    run_a_id : int
+    run_b_id : int
+    score_delta : float | None
+  }
+  class RunInputSerializer {
+    targets : ListField
+  }
+  class RunPylintView {
+    permission_required : str
+    post(request) HttpResponse
+  }
+  class SnippetAnalyzeView {
+    permission_required : str
+    get(request) HttpResponse
+    post(request) HttpResponse
+  }
+  class Source {
+    name
+  }
+  class Status {
+    name
+  }
+  class SubprocessPylintRunner {
+    rcfile
+    timeout
+    run(targets: list[str]) RawLintOutput
+  }
+  LintRunDetailSerializer --|> LintRunSerializer
+  Meta --|> Meta
+  LintRunViewSet --> LintRunSerializer : serializer_class
+  LintService --> MessageCatalog : catalog
+  LintService --> Json2Parser : parser
+  LintService --> SubprocessPylintRunner : runner
+  LintMessageSerializer --* LintRunDetailSerializer : messages
+  LintMessageRecord --o LintMessageInline : model
+  LintMessageRecord --o Meta : model
+  LintRun --o Meta : model

@@ -1,0 +1,39 @@
+classDiagram
+  class accounts {
+  }
+  class admin {
+  }
+  class api {
+  }
+  class urls {
+  }
+  class apps {
+  }
+  class forms {
+  }
+  class management {
+  }
+  class commands {
+  }
+  class setup_roles {
+  }
+  class models {
+  }
+  class roles {
+  }
+  class services {
+  }
+  class urls {
+  }
+  class views {
+  }
+  admin --> models
+  forms --> models
+  forms --> roles
+  setup_roles --> roles
+  models --> roles
+  services --> models
+  services --> roles
+  views --> forms
+  views --> models
+  views --> services

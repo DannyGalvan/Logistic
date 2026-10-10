@@ -1,0 +1,15 @@
+.git
+.venv
+.env
+.idea
+.vscode
+.pytest_cache
+.coverage
+htmlcov
+staticfiles
+reports
+__pycache__
+**/__pycache__
+*.pyc
+.DS_Store
+docs/uml/*.png

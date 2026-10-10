@@ -1,0 +1,290 @@
+classDiagram
+  class Brand {
+    name : CharField
+  }
+  class BrandAdmin {
+    list_display : tuple
+    search_fields : tuple
+  }
+  class BrandCreateView {
+    form_class
+    model
+    success_url : \_\_proxy\_\_
+    template_name : str
+  }
+  class BrandForm {
+  }
+  class BrandListView {
+    context_object_name : str
+    model
+    template_name : str
+    get_queryset()
+  }
+  class BrandSerializer {
+  }
+  class BrandUpdateView {
+    form_class
+    model
+    success_url : \_\_proxy\_\_
+    template_name : str
+  }
+  class BrandViewSet {
+    create_service
+    queryset
+    search_fields : list
+    serializer_class
+    service_accepts_user : bool
+    update_service
+  }
+  class CatalogConfig {
+    label : str
+    name : str
+    verbose_name : str
+    ready() None
+  }
+  class Category {
+    description : CharField
+    name : CharField
+    parent : ForeignKey
+  }
+  class CategoryAdmin {
+    list_display : tuple
+    list_filter : tuple
+    search_fields : tuple
+  }
+  class CategoryCreateView {
+    form_class
+    model
+    object
+    success_url : \_\_proxy\_\_
+    template_name : str
+    form_valid(form)
+  }
+  class CategoryForm {
+  }
+  class CategoryListView {
+    context_object_name : str
+    model
+    template_name : str
+    get_queryset()
+  }
+  class CategorySerializer {
+  }
+  class CategoryUpdateView {
+    form_class
+    model
+    success_url : \_\_proxy\_\_
+    template_name : str
+  }
+  class CategoryViewSet {
+    create_service
+    filterset_fields : list
+    queryset
+    search_fields : list
+    serializer_class
+    service_accepts_user : bool
+    update_service
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    constraints : list
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Product {
+    barcode : CharField
+    brand : ForeignKey
+    category : ForeignKey
+    cost_price : DecimalField
+    description : TextField
+    max_stock : DecimalField
+    min_stock : DecimalField
+    name : CharField
+    reorder_point : DecimalField
+    rotation_strategy : CharField
+    sale_price : DecimalField
+    sku : CharField
+    track_expiry : BooleanField
+    track_lots : BooleanField
+    uom : ForeignKey
+    clean() None
+  }
+  class ProductAdmin {
+    list_display : tuple
+    list_filter : tuple
+    search_fields : tuple
+  }
+  class ProductCreateView {
+    form_class
+    model
+    object
+    success_url : \_\_proxy\_\_
+    template_name : str
+    form_valid(form)
+  }
+  class ProductDeactivateView {
+    model
+    success_url : \_\_proxy\_\_
+    template_name : str
+    form_valid(form)
+  }
+  class ProductForm {
+    clean()
+  }
+  class ProductListView {
+    context_object_name : str
+    model
+    template_name : str
+    get_context_data()
+    get_queryset()
+  }
+  class ProductSerializer {
+  }
+  class ProductUpdateView {
+    form_class
+    model
+    success_url : \_\_proxy\_\_
+    template_name : str
+    form_valid(form)
+  }
+  class ProductViewSet {
+    create_service
+    filterset_fields : list
+    ordering_fields : list
+    queryset
+    search_fields : list
+    serializer_class
+    update_service
+  }
+  class RotationStrategy {
+    name
+  }
+  class UnitAdmin {
+    list_display : tuple
+    search_fields : tuple
+  }
+  class UnitCreateView {
+    form_class
+    model
+    success_url : \_\_proxy\_\_
+    template_name : str
+  }
+  class UnitForm {
+  }
+  class UnitListView {
+    context_object_name : str
+    model
+    template_name : str
+    get_queryset()
+  }
+  class UnitOfMeasure {
+    code : CharField
+    name : CharField
+  }
+  class UnitOfMeasureSerializer {
+  }
+  class UnitOfMeasureViewSet {
+    create_service
+    queryset
+    search_fields : list
+    serializer_class
+    service_accepts_user : bool
+    update_service
+  }
+  class UnitUpdateView {
+    form_class
+    model
+    success_url : \_\_proxy\_\_
+    template_name : str
+  }
+  class _BaseCatalogListView {
+    paginate_by : int
+  }
+  BrandListView --|> _BaseCatalogListView
+  CategoryListView --|> _BaseCatalogListView
+  ProductListView --|> _BaseCatalogListView
+  UnitListView --|> _BaseCatalogListView
+  BrandViewSet --> BrandSerializer : serializer_class
+  CategoryViewSet --> CategorySerializer : serializer_class
+  ProductViewSet --> ProductSerializer : serializer_class
+  UnitOfMeasureViewSet --> UnitOfMeasureSerializer : serializer_class
+  BrandForm --o BrandCreateView : form_class
+  BrandForm --o BrandUpdateView : form_class
+  CategoryForm --o CategoryCreateView : form_class
+  CategoryForm --o CategoryUpdateView : form_class
+  ProductForm --o ProductCreateView : form_class
+  ProductForm --o ProductUpdateView : form_class
+  UnitForm --o UnitCreateView : form_class
+  UnitForm --o UnitUpdateView : form_class
+  Brand --o Meta : model
+  Brand --o Meta : model
+  Brand --o BrandCreateView : model
+  Brand --o BrandListView : model
+  Brand --o BrandUpdateView : model
+  Category --o Meta : model
+  Category --o Meta : model
+  Category --o CategoryCreateView : model
+  Category --o CategoryListView : model
+  Category --o CategoryUpdateView : model
+  Product --o Meta : model
+  Product --o Meta : model
+  Product --o ProductCreateView : model
+  Product --o ProductDeactivateView : model
+  Product --o ProductListView : model
+  Product --o ProductUpdateView : model
+  UnitOfMeasure --o Meta : model
+  UnitOfMeasure --o Meta : model
+  UnitOfMeasure --o UnitCreateView : model
+  UnitOfMeasure --o UnitListView : model
+  UnitOfMeasure --o UnitUpdateView : model

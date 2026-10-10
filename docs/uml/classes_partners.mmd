@@ -1,0 +1,152 @@
+classDiagram
+  class Customer {
+    active : ActiveManager
+    credit_limit : DecimalField
+    objects : Manager
+  }
+  class CustomerAdmin {
+    list_display : tuple
+    list_filter : tuple
+    search_fields : tuple
+  }
+  class CustomerCreateView {
+    form_class
+    model
+    object
+    success_url : \_\_proxy\_\_
+    template_name : str
+    form_valid(form)
+  }
+  class CustomerForm {
+  }
+  class CustomerListView {
+    context_object_name : str
+    model
+    paginate_by : int
+    template_name : str
+    get_queryset()
+  }
+  class CustomerSerializer {
+  }
+  class CustomerUpdateView {
+    form_class
+    model
+    success_url : \_\_proxy\_\_
+    template_name : str
+  }
+  class CustomerViewSet {
+    create_service
+    filterset_fields : list
+    queryset
+    search_fields : list
+    serializer_class
+    update_service
+  }
+  class Meta {
+    abstract : bool
+    ordering : list
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Meta {
+    fields : list
+    model
+    read_only_fields : list
+  }
+  class Partner {
+    address : CharField
+    contact_name : CharField
+    email : EmailField
+    name : CharField
+    notes : TextField
+    phone : CharField
+    tax_id : CharField
+  }
+  class PartnersConfig {
+    label : str
+    name : str
+    verbose_name : str
+  }
+  class Supplier {
+    active : ActiveManager
+    lead_time_days : PositiveIntegerField
+    objects : Manager
+    payment_terms : CharField
+  }
+  class SupplierAdmin {
+    list_display : tuple
+    list_filter : tuple
+    search_fields : tuple
+  }
+  class SupplierCreateView {
+    form_class
+    model
+    object
+    success_url : \_\_proxy\_\_
+    template_name : str
+    form_valid(form)
+  }
+  class SupplierForm {
+  }
+  class SupplierListView {
+    context_object_name : str
+    model
+    paginate_by : int
+    template_name : str
+    get_queryset()
+  }
+  class SupplierSerializer {
+  }
+  class SupplierUpdateView {
+    form_class
+    model
+    success_url : \_\_proxy\_\_
+    template_name : str
+  }
+  class SupplierViewSet {
+    create_service
+    filterset_fields : list
+    queryset
+    search_fields : list
+    serializer_class
+    update_service
+  }
+  Customer --|> Partner
+  Supplier --|> Partner
+  CustomerViewSet --> CustomerSerializer : serializer_class
+  SupplierViewSet --> SupplierSerializer : serializer_class
+  CustomerForm --o CustomerCreateView : form_class
+  CustomerForm --o CustomerUpdateView : form_class
+  SupplierForm --o SupplierCreateView : form_class
+  SupplierForm --o SupplierUpdateView : form_class
+  Customer --o Meta : model
+  Customer --o Meta : model
+  Customer --o CustomerCreateView : model
+  Customer --o CustomerListView : model
+  Customer --o CustomerUpdateView : model
+  Supplier --o Meta : model
+  Supplier --o Meta : model
+  Supplier --o SupplierCreateView : model
+  Supplier --o SupplierListView : model
+  Supplier --o SupplierUpdateView : model

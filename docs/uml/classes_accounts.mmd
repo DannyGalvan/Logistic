@@ -1,0 +1,113 @@
+classDiagram
+  class AccountsConfig {
+    label : str
+    name : str
+    verbose_name : str
+    ready() None
+  }
+  class Command {
+    help : str
+    handle()
+  }
+  class CustomPermissions {
+  }
+  class LoginForm {
+    password : CharField
+    username : CharField
+  }
+  class LoginView {
+    redirect_authenticated_user : bool
+    template_name : str
+    get_context_data()
+  }
+  class LogoutView {
+    next_page : \_\_proxy\_\_
+  }
+  class Meta {
+    ordering : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    default_permissions : tuple[str, ...]
+    managed : bool
+    permissions : list
+    verbose_name : str
+    verbose_name_plural : str
+  }
+  class Meta {
+    fields : list
+    labels : dict
+    model
+  }
+  class Meta {
+    fields : list
+    model
+  }
+  class Meta {
+    fields : list
+    labels : dict
+    model
+  }
+  class ProfileForm {
+  }
+  class ProfileView {
+    template_name : str
+    get_context_data()
+    post(request)
+  }
+  class Role {
+    name
+  }
+  class User {
+    default_warehouse : ForeignKey
+    phone : CharField
+    role : CharField
+  }
+  class UserAdminConfig {
+    fieldsets : tuple
+    list_display : tuple
+    list_filter : tuple
+    search_fields : tuple
+  }
+  class UserCreateForm {
+    role : ChoiceField
+    clean_password2() str
+  }
+  class UserCreateView {
+    form_class
+    model
+    permission_required : str
+    raise_exception : bool
+    success_url : \_\_proxy\_\_
+    template_name : str
+    form_valid(form)
+  }
+  class UserForm {
+    role : ChoiceField
+  }
+  class UserListView {
+    context_object_name : str
+    model
+    paginate_by : int
+    permission_required : str
+    raise_exception : bool
+    template_name : str
+  }
+  class UserUpdateView {
+    form_class
+    model
+    permission_required : str
+    raise_exception : bool
+    success_url : \_\_proxy\_\_
+    template_name : str
+    form_valid(form)
+  }
+  UserCreateForm --o UserCreateView : form_class
+  UserForm --o UserUpdateView : form_class
+  User --o Meta : model
+  User --o Meta : model
+  User --o Meta : model
+  User --o UserCreateView : model
+  User --o UserListView : model
+  User --o UserUpdateView : model
