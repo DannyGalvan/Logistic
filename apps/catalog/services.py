@@ -53,6 +53,24 @@ def create_unit(*, code: str, name: str) -> UnitOfMeasure:
 
 
 @transaction.atomic
+def update_brand(brand: Brand, **fields: Any) -> Brand:
+    """Actualiza una marca."""
+    for key, value in fields.items():
+        setattr(brand, key, value)
+    brand.save()
+    return brand
+
+
+@transaction.atomic
+def update_unit(unit: UnitOfMeasure, **fields: Any) -> UnitOfMeasure:
+    """Actualiza una unidad de medida."""
+    for key, value in fields.items():
+        setattr(unit, key, value)
+    unit.save()
+    return unit
+
+
+@transaction.atomic
 def create_product(  # pylint: disable=too-many-arguments,too-many-locals
     *,
     sku: str,
@@ -126,7 +144,9 @@ __all__ = [
     "update_category",
     "deactivate_category",
     "create_brand",
+    "update_brand",
     "create_unit",
+    "update_unit",
     "create_product",
     "update_product",
     "deactivate_product",

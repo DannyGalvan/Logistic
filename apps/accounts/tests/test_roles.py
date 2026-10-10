@@ -113,3 +113,18 @@ def test_setup_roles_removes_lost_permissions() -> None:
     call_command("setup_roles", verbosity=0)
     group.refresh_from_db()
     assert view_user not in group.permissions.all()
+
+
+@pytest.mark.django_db
+def test_setup_roles_resolves_every_permission() -> None:
+    """Todos los permisos de cada rol existen en la BD (sin faltantes)."""
+    call_command("setup_roles", verbosity=0)
+    for role, perms in ROLE_PERMISSIONS.items():
+        group = Group.objects.get(name=str(role))
+        assigned = {
+            f"{app}.{code}"
+            for app, code in group.permissions.values_list(
+                "content_type__app_label", "codename"
+            )
+        }
+        assert assigned == set(perms), role

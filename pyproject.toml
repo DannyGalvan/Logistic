@@ -47,6 +47,10 @@ markers = [
     "slow: ejecuta pylint real (mas lento)",
 ]
 testpaths = ["apps", "tests"]
+filterwarnings = [
+    # WhiteNoise avisa si no existe STATIC_ROOT (no se corre collectstatic en tests).
+    "ignore:No directory at:UserWarning",
+]
 
 [tool.coverage.run]
 source = ["apps", "config"]

@@ -156,6 +156,12 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API REST del sistema de inventario y logistica StockFlow.",
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "ENUM_NAME_OVERRIDES": {
+        "PurchaseOrderStatusEnum": "apps.purchasing.models.PurchaseOrder.Status",
+        "SalesOrderStatusEnum": "apps.sales.models.SalesOrder.Status",
+        "CycleCountStatusEnum": "apps.inventory.models.CycleCount.Status",
+        "LintRunStatusEnum": "apps.quality.models.LintRun.Status",
+    },
 }
 
 PYLINT_RCFILE = str(BASE_DIR / ".pylintrc")

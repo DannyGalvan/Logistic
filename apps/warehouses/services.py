@@ -83,6 +83,15 @@ def create_location(
 
 
 @transaction.atomic
+def update_location(location: Location, **fields: Any) -> Location:
+    """Actualiza una ubicacion."""
+    for key, value in fields.items():
+        setattr(location, key, value)
+    location.save()
+    return location
+
+
+@transaction.atomic
 def deactivate_warehouse(warehouse: Warehouse, user=None) -> Warehouse:
     """Desactiva el almacen."""
     warehouse.is_active = False
@@ -96,6 +105,7 @@ __all__ = [
     "create_warehouse",
     "update_warehouse",
     "create_location",
+    "update_location",
     "deactivate_warehouse",
     "DEFAULT_LOCATIONS",
 ]
