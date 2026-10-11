@@ -65,3 +65,6 @@ node_modules/
 *.pid
 *.seed
 *.pid.lock
+
+# --- Planes internos (no versionar) ---
+plans/
